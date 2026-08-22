@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://resultseal.dev/schemas/observation-envelope.v1.json",
+  "title": "ResultSeal Observation Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "observation_id", "tool_call_id", "tool_name", "target_ref", "transport_state", "truth_state", "source_ref", "observed_at", "content_hash", "evidence_refs", "reason_codes"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "observation_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "tool_call_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "tool_name": {"type": "string", "minLength": 1, "maxLength": 256},
+    "target_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "transport_state": {"enum": ["attempted", "dispatched", "transported", "transport_error"]},
+    "truth_state": {"enum": ["observed", "complete", "empty", "not_found", "partial", "stale", "source_mismatch", "unverified_effect", "parse_error", "unknown", "sealed"]},
+    "source_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "source_version": {"type": ["string", "null"], "maxLength": 256},
+    "content_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "maxLength": 2048}},
+    "reason_codes": {"type": "array", "maxItems": 64, "items": {"type": "string", "pattern": "^[A-Z0-9_]+$"}},
+    "metadata": {"type": "object", "additionalProperties": {"type": ["string", "number", "boolean", "null"]}, "maxProperties": 64}
+  }
+}
+

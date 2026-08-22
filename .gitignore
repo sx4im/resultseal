@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+.coverage
+htmlcov/
+.env
+.DS_Store
+
+resultseal_claude_code_handoff/
+
+# --- Local-only working documents -----------------------------------------
+# Internal planning, AI-workflow, and session-state files. They stay on the
+# maintainer's machine and are deliberately excluded from the public
+# repository (decision log D17).
+/ACCEPTANCE_CHECKLIST.md
+/CLAUDE.md
+/CLAUDE_CODE_HANDOFF.md
+/GITHUB_DISCOVERY_PLAYBOOK.md
+/IMPLEMENTATION_ORDER.md
+/IMPLEMENTATION_STATUS.md
+/MANIFEST.txt
+/MASTER_BUILD_PROMPT.md
+/PROBLEM_AND_RESEARCH.md
+/RELEASE_PLAN.md
+/RESEARCH_*
+/STATESEAL_CHAT_HANDOFF.md
+/TEST_STRATEGY.md
+/prompts/
+/docs/superpowers/
+/docs/test-evidence.md
+/docs/requirements-matrix.md

@@ -1,0 +1,11 @@
+fixture_version: 1
+name: unsafe-input
+claim_type: read_complete
+input:
+  kind: yaml
+  value: "!!python/object/apply:os.system ['echo unsafe']"
+expected:
+  decision: rejected
+  reason_codes:
+    - UNSAFE_INPUT
+

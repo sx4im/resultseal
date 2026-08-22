@@ -1,0 +1,28 @@
+fixture_version: 1
+name: partial-response
+claim_type: read_complete
+contract:
+  schema_version: "1"
+  claim_type: read_complete
+  required_fields:
+    - customer_id
+    - name
+    - email
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://directory
+  target_ref: customer:42
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: json
+  source_ref: fixture://directory
+  target_ref: customer:42
+  body:
+    customer_id: "42"
+expected:
+  truth_state: partial
+  decision: blocked
+  reason_codes:
+    - MISSING_REQUIRED_FIELD

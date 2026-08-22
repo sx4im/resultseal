@@ -1,0 +1,31 @@
+fixture_version: 1
+name: complete-fresh-result
+claim_type: read_complete
+contract:
+  schema_version: "1"
+  claim_type: read_complete
+  required_fields:
+    - customer_id
+    - name
+    - email
+  freshness:
+    mode: source_version
+  min_source_version: revision-17
+  source_ref: fixture://directory
+  target_ref: customer:42
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: json
+  source_ref: fixture://directory
+  source_version: revision-17
+  target_ref: customer:42
+  body:
+    customer_id: "42"
+    name: Ada
+    email: ada@example.test
+expected:
+  truth_state: sealed
+  decision: sealed
+  reason_codes:
+    - SEALED_WITH_REQUIRED_EVIDENCE

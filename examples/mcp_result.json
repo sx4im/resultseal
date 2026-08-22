@@ -1,0 +1,6 @@
+{
+  "structuredContent": {"customer_id": "42", "name": "Ada"},
+  "outputSchema": {"type": "object", "required": ["customer_id", "name"]},
+  "isError": false
+}
+

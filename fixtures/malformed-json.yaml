@@ -1,0 +1,26 @@
+fixture_version: 1
+name: malformed-json
+claim_type: read_complete
+contract:
+  schema_version: "1"
+  claim_type: read_complete
+  required_fields:
+    - customer_id
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://directory
+  target_ref: customer:42
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: http_json
+  status_code: 200
+  source_ref: fixture://directory
+  target_ref: customer:42
+  body: "{broken"
+expected:
+  truth_state: parse_error
+  decision: blocked
+  reason_codes:
+    - PARSE_FAILED

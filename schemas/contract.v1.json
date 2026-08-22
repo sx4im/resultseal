@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://resultseal.dev/schemas/contract.v1.json",
+  "title": "ResultSeal Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "claim_type", "required_fields", "freshness", "source_ref", "target_ref"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "claim_type": {"enum": ["found", "not_found", "read_complete", "effect_observed", "task_complete"]},
+    "required_fields": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 256}},
+    "freshness": {"type": "object", "additionalProperties": false, "required": ["mode"], "properties": {"mode": {"enum": ["not_required", "source_version", "max_age_seconds"]}, "max_age_seconds": {"type": ["integer", "null"], "minimum": 0, "maximum": 31536000}}},
+    "min_source_version": {"type": ["string", "null"], "maxLength": 256},
+    "source_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "target_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "not_found_sentinel": {"type": ["string", "null"], "maxLength": 256},
+    "effect_evidence_required": {"type": "boolean"}
+  }
+}
+

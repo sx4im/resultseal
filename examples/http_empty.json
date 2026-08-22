@@ -1,0 +1,8 @@
+{
+  "status_code": 200,
+  "request_target": "customer:42",
+  "response_body": "",
+  "source_ref": "http://example.invalid/customers",
+  "observed_at": "2026-08-21T10:00:00Z"
+}
+

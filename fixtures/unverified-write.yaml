@@ -1,0 +1,27 @@
+fixture_version: 1
+name: unverified-write
+claim_type: effect_observed
+contract:
+  schema_version: "1"
+  claim_type: effect_observed
+  required_fields:
+    - status
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://writer
+  target_ref: customer:42
+  not_found_sentinel: null
+  effect_evidence_required: true
+input:
+  kind: http_json
+  status_code: 200
+  source_ref: fixture://writer
+  target_ref: customer:42
+  body:
+    status: updated
+expected:
+  truth_state: unverified_effect
+  decision: blocked
+  reason_codes:
+    - UNVERIFIED_EFFECT

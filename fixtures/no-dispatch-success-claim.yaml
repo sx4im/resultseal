@@ -1,0 +1,23 @@
+fixture_version: 1
+name: no-dispatch-success-claim
+claim_type: task_complete
+contract:
+  schema_version: "1"
+  claim_type: task_complete
+  required_fields: []
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://task
+  target_ref: customer:42
+  not_found_sentinel: null
+  effect_evidence_required: true
+input:
+  kind: claim_only
+  claim: customer updated
+  tool_call_dispatched: false
+expected:
+  truth_state: unknown
+  decision: blocked
+  reason_codes:
+    - NO_DISPATCH

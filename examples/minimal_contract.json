@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "claim_type": "not_found",
+  "required_fields": ["target_ref"],
+  "freshness": {"mode": "not_required"},
+  "source_ref": "fixture://directory",
+  "target_ref": "customer:42",
+  "not_found_sentinel": "NOT_FOUND",
+  "effect_evidence_required": false
+}
+
