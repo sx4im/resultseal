@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- A naive-but-parseable `observed_at` under `max_age_seconds` freshness
+  now blocks as `unknown`/`SCHEMA_INVALID` instead of escaping `evaluate`
+  as an unclassified `TypeError` (D18).
+- `resultseal replay --format json --redact` now redacts before
+  fingerprinting, matching `resultseal check`, so the printed
+  `deterministic_fingerprint` verifies against the printed record.
+  Redacted replay output differs byte-wise from 0.1.0; unredacted output
+  is unchanged (D19).
+
+### Changed
+
+- Internal readability cleanups with no behavior change: shared
+  expectation-matching and record-pipeline helpers, single homes for
+  `format_clock` and the fingerprint key, unused parameters removed (D20).
+
 ## 0.1.0 — 2026-08-22 (public alpha)
 
 First implementation release. Offline, deterministic observation-integrity
