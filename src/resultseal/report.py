@@ -10,11 +10,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from resultseal.canonical import canonical_json, decision_fingerprint
+from resultseal.canonical import FINGERPRINT_KEY, canonical_json, decision_fingerprint
 from resultseal.models import Contract, JsonValue, ObservationEnvelope
 from resultseal.rules import Evaluation
-
-_FINGERPRINT_KEY = "deterministic_fingerprint"
 
 
 def build_record(
@@ -41,7 +39,7 @@ def build_record(
 def with_fingerprint(record: Mapping[str, JsonValue]) -> dict[str, JsonValue]:
     """Return a copy of *record* with its deterministic fingerprint added."""
     stamped = dict(record)
-    stamped[_FINGERPRINT_KEY] = decision_fingerprint(record)
+    stamped[FINGERPRINT_KEY] = decision_fingerprint(record)
     return stamped
 
 
@@ -98,7 +96,7 @@ def render_markdown(
         "## Evidence",
         evidence_text,
         "",
-        f"fingerprint: {record.get(_FINGERPRINT_KEY)}",
+        f"fingerprint: {record.get(FINGERPRINT_KEY)}",
     ]
     if clock_note:
         lines.insert(len(lines) - 1, f"reference clock: {clock_note}")

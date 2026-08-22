@@ -15,7 +15,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import TypeVar
 
-from resultseal.errors import ContractInvalidError, SchemaInvalidError
+from resultseal.errors import ContractInvalidError, ResultSealError, SchemaInvalidError
 
 SCHEMA_VERSION = "1"
 
@@ -76,13 +76,20 @@ class FreshnessMode(StrEnum):
     MAX_AGE_SECONDS = "max_age_seconds"
 
 
-def _check_str(value: object, name: str, *, max_len: int, allow_empty: bool = False) -> str:
+def _check_str(
+    value: object,
+    name: str,
+    *,
+    max_len: int,
+    allow_empty: bool = False,
+    error: type[ResultSealError] = SchemaInvalidError,
+) -> str:
     if not isinstance(value, str):
-        raise SchemaInvalidError(f"field {name!r} must be a string")
+        raise error(f"field {name!r} must be a string")
     if not value and not allow_empty:
-        raise SchemaInvalidError(f"field {name!r} must be non-empty")
+        raise error(f"field {name!r} must be non-empty")
     if len(value) > max_len:
-        raise SchemaInvalidError(f"field {name!r} exceeds {max_len} characters")
+        raise error(f"field {name!r} exceeds {max_len} characters")
     return value
 
 
@@ -309,11 +316,21 @@ class Contract:
             if not 0 <= self.max_age_seconds <= 31_536_000:
                 raise ContractInvalidError("max_age_seconds must be 0..31536000")
         if self.min_source_version is not None:
-            _check_str_contract(self.min_source_version, "min_source_version", 256)
-        _check_str_contract(self.source_ref, "source_ref", 1024)
-        _check_str_contract(self.target_ref, "target_ref", 1024)
+            _check_str(
+                self.min_source_version,
+                "min_source_version",
+                max_len=256,
+                error=ContractInvalidError,
+            )
+        _check_str(self.source_ref, "source_ref", max_len=1024, error=ContractInvalidError)
+        _check_str(self.target_ref, "target_ref", max_len=1024, error=ContractInvalidError)
         if self.not_found_sentinel is not None:
-            _check_str_contract(self.not_found_sentinel, "not_found_sentinel", 256)
+            _check_str(
+                self.not_found_sentinel,
+                "not_found_sentinel",
+                max_len=256,
+                error=ContractInvalidError,
+            )
         if not isinstance(self.effect_evidence_required, bool):
             raise ContractInvalidError("effect_evidence_required must be boolean")
         if self.freshness_mode is FreshnessMode.MAX_AGE_SECONDS:
@@ -432,13 +449,3 @@ class Contract:
             not_found_sentinel=_as_opt_str(raw, "not_found_sentinel"),
             effect_evidence_required=effect_flag,
         )
-
-
-def _check_str_contract(value: object, name: str, max_len: int) -> str:
-    if not isinstance(value, str):
-        raise ContractInvalidError(f"field {name!r} must be a string")
-    if not value:
-        raise ContractInvalidError(f"field {name!r} must be non-empty")
-    if len(value) > max_len:
-        raise ContractInvalidError(f"field {name!r} exceeds {max_len} characters")
-    return value

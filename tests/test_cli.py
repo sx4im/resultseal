@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from resultseal.canonical import decision_fingerprint
 from resultseal.cli import main
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -197,3 +198,15 @@ def test_replay_json_deterministic_across_runs(capsys) -> None:  # type: ignore[
     assert main(args) == 0
     second = capsys.readouterr().out
     assert first == second != ""
+
+
+def test_replay_redacted_json_fingerprint_matches_record(capsys) -> None:  # type: ignore[no-untyped-def]
+    args = [
+        "replay", str(FIXTURES / "complete-fresh-result.yaml"), CLOCK,
+        "--format", "json", "--redact", "source_ref",
+    ]
+    assert main(args) == 0
+    record = json.loads(capsys.readouterr().out)
+    shown = record.pop("deterministic_fingerprint")
+    assert record["source_ref"] == "[REDACTED]"
+    assert decision_fingerprint(record) == shown

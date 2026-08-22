@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from resultseal.errors import ContractInvalidError, ParseFailedError
@@ -33,7 +34,9 @@ def load_contract_data(doc: object, limits: Limits) -> Contract:
     return Contract.from_dict(doc)
 
 
-def _read(path: Path, limits: Limits, loader) -> object:  # type: ignore[no-untyped-def]
+def _read(
+    path: Path, limits: Limits, loader: Callable[[bytes, Limits], object]
+) -> object:
     try:
         data = path.read_bytes()
     except OSError as exc:

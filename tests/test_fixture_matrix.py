@@ -8,9 +8,8 @@ from pathlib import Path
 import pytest
 
 from resultseal.contracts import Contract
-from resultseal.fixtures import load_fixture_file
+from resultseal.fixtures import expectation_matches, load_fixture_file
 from resultseal.limits import Limits
-from resultseal.models import Decision
 from resultseal.normalize import normalize
 from resultseal.rules import ReferenceClock, evaluate
 
@@ -31,16 +30,10 @@ def test_catalog_expectation_holds(path: Path) -> None:
     evaluation = evaluate(
         normalization.envelope, normalization.payload, contract, CLOCK
     )
-    expected_decision = (
-        Decision.SEALED
-        if bundle.expected.decision_literal == "sealed"
-        else Decision.BLOCKED
+    assert expectation_matches(bundle.expected, evaluation), (
+        f"{path.name}: got {evaluation.decision.value}/{evaluation.truth_state.value}"
+        f" {list(evaluation.reason_codes)}"
     )
-    assert evaluation.decision is expected_decision, path.name
-    if bundle.expected.truth_state is not None:
-        assert evaluation.truth_state is bundle.expected.truth_state, path.name
-    for code in bundle.expected.reason_codes:
-        assert code in evaluation.reason_codes, path.name
 
 
 def test_unsafe_input_is_refused_during_preparation() -> None:

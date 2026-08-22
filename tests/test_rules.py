@@ -268,6 +268,17 @@ def test_unparseable_observed_at_with_max_age_is_unknown() -> None:
     assert "SCHEMA_INVALID" in result.reason_codes
 
 
+def test_naive_observed_at_with_max_age_is_unknown() -> None:
+    contract = read_contract(
+        freshness_mode=FreshnessMode.MAX_AGE_SECONDS,
+        min_source_version=None,
+        max_age_seconds=600,
+    )
+    result = evaluate(env(observed_at="2026-08-21T09:00:00"), FULL, contract, CLOCK)
+    assert result.truth_state is TruthState.UNKNOWN
+    assert "SCHEMA_INVALID" in result.reason_codes
+
+
 def test_not_required_freshness_ignores_version() -> None:
     contract = read_contract(
         freshness_mode=FreshnessMode.NOT_REQUIRED, min_source_version=None

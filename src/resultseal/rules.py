@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 from resultseal.errors import InvalidArgumentError
 from resultseal.models import (
@@ -64,6 +64,11 @@ class Evaluation:
     decision: Decision
     truth_state: TruthState
     reason_codes: tuple[str, ...]
+
+
+def format_clock(now: datetime) -> str:
+    """Canonical instant rendering: UTC, second precision, ``Z`` suffix."""
+    return now.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def evaluate(
@@ -197,8 +202,16 @@ def _freshness_failure(
 
 
 def _parse_timestamp(value: str) -> datetime | None:
+    """None unless *value* is an offset-aware ISO-8601 timestamp.
+
+    A naive timestamp cannot be compared to the timezone-aware reference
+    clock and is refused like an unparseable one rather than silently
+    assumed to be UTC.
+    """
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
+        return None
+    if parsed.tzinfo is None:
         return None
     return parsed

@@ -64,16 +64,12 @@ def _imports_and_calls(tree: ast.AST) -> tuple[set[str], set[str]]:
     return imported, calls
 
 
-def _relative_name(module: str) -> str:
-    return module if module.startswith("resultseal") else module
-
-
 def test_pure_modules_import_no_io() -> None:
     for name in sorted(PURE_MODULES):
         tree = ast.parse((SRC / name).read_text(encoding="utf-8"))
         imported, _ = _imports_and_calls(tree)
         for module in imported:
-            assert _relative_name(module) in PURE_ALLOWED_IMPORTS, (
+            assert module in PURE_ALLOWED_IMPORTS, (
                 f"{name} imports {module}"
             )
 

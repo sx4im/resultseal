@@ -119,3 +119,44 @@ discovery plans, research-pipeline outputs, and the acceptance checklist —
 are maintained locally only and are listed in `.gitignore`. References to
 those files in earlier entries below refer to local maintainer files; the
 decisions themselves remain fully described here.
+
+## D18 — 2026-08-22 — Naive `observed_at` is schema-invalid under max-age freshness
+
+`_parse_timestamp` accepted offset-naive ISO-8601 values; the subsequent
+age subtraction against the timezone-aware reference clock then escaped
+`evaluate` as a raw `TypeError` instead of a classified outcome. An
+observation whose `observed_at` carries no UTC offset cannot be compared
+to the reference clock, so it is refused exactly like an unparseable
+timestamp: blocked/unknown with reason code `SCHEMA_INVALID`. Fail-closed;
+symmetric with `ReferenceClock`'s aware-only invariant. The operator-supplied
+`--now` flag keeps assuming UTC for naive input (trusted invocation flag,
+per D10). Found in the 2026-08-22 readability audit.
+
+## D19 — 2026-08-22 — Redaction always precedes fingerprinting
+
+`resultseal replay --format json --redact` stamped the fingerprint over the
+pre-redaction record, printing a `deterministic_fingerprint` that did not
+verify against the record beside it, and disagreed with `resultseal check`
+for identical content. The record pipeline is now redact-then-fingerprint
+everywhere; a redacted report's fingerprint is computed over exactly the
+redacted record shown. Replay outputs with redaction change bytes relative
+to 0.1.0; unredacted output is unchanged. Found in the 2026-08-22
+readability audit.
+
+## D20 — 2026-08-22 — Readability audit cleanups (no behavior change)
+
+A senior-review pass over src/ and tests/ landed the following internal
+cleanups alongside D18 and D19: the unused `kind` parameter was removed
+from all normalizer handlers; `format_clock` and the fingerprint key each
+have a single home (`rules.py`, `canonical.py`); `_check_str` is one
+validator parameterized by error class; fixture loading threads caller
+`Limits` into embedded contracts; `prepare_payload` lost its
+never-supplied `limits` argument (nested payloads are documented as
+package-default bounds); `expectation_matches` in `fixtures.py` is the
+single definition of fixture-expectation semantics, used by both the CLI
+and the fixture-matrix tests; build → redact → fingerprint is one shared
+record helper; safeio's root-kind guard is a single branch; fixture
+`reason_codes` no longer coerce falsy non-lists; the purity scan lost an
+identity helper; and minor typing/comment fixes landed in `contracts.py`,
+`errors.py`, and two test files. All three gates (ruff, mypy strict,
+pytest) run clean after each individual change.

@@ -17,6 +17,6 @@ def test_version_is_semver_string() -> None:
     assert all(part.isdigit() for part in parts)
 
 
-def test_version_command_exits_zero(capsys: object) -> None:
+def test_version_command_exits_zero() -> None:
     exit_code = main(["version"])
     assert exit_code == 0

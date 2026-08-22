@@ -1,7 +1,7 @@
 """Integration: a naive promotion path trusts observations ResultSeal blocks.
 
-This is the executable statement of the product promise (MASTER_BUILD_PROMPT
-Phase 7): ``naive_promote`` embodies the common anti-pattern — transport
+This is the executable statement of the product promise (PRODUCT_SPEC):
+``naive_promote`` embodies the common anti-pattern — transport
 status and payload presence collapse into one binary success — while
 ResultSeal's contract-gated pipeline refuses each case.
 """

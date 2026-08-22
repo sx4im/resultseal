@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from resultseal.errors import SchemaInvalidError
 from resultseal.models import JsonValue
 
-_FINGERPRINT_KEY = "deterministic_fingerprint"
+FINGERPRINT_KEY = "deterministic_fingerprint"
 
 
 def canonical_json(obj: JsonValue) -> bytes:
@@ -45,7 +45,7 @@ def content_hash(obj: JsonValue) -> str:
 
 def decision_fingerprint(record: Mapping[str, JsonValue]) -> str:
     """``sha256:<hex>`` over the record minus its own fingerprint field."""
-    trimmed = {k: v for k, v in record.items() if k != _FINGERPRINT_KEY}
+    trimmed = {k: v for k, v in record.items() if k != FINGERPRINT_KEY}
     return content_hash(trimmed)
 
 

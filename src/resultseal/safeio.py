@@ -54,13 +54,10 @@ def load_yaml(data: bytes, limits: Limits) -> JsonValue:
         ) from exc
     except yaml.YAMLError as exc:
         raise ParseFailedError("input is not valid YAML", detail=str(exc)[:120]) from exc
-    if doc is None or isinstance(doc, (str, int, float, bool)):
-        walk_bounds(doc, limits)
-        return doc
-    if isinstance(doc, (dict, list)):
-        walk_bounds(doc, limits)
-        return doc
-    raise LimitExceededError("document root must be a mapping, sequence, or scalar")
+    if doc is not None and not isinstance(doc, (str, int, float, bool, dict, list)):
+        raise LimitExceededError("document root must be a mapping, sequence, or scalar")
+    walk_bounds(doc, limits)
+    return doc
 
 
 def resolve_under_root(path_text: str, root: Path) -> Path:

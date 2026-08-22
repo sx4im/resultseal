@@ -30,7 +30,7 @@ from resultseal.errors import (
     ResultSealError,
     SchemaInvalidError,
 )
-from resultseal.fixtures import load_fixture_file
+from resultseal.fixtures import expectation_matches, load_fixture_file
 from resultseal.limits import Limits
 from resultseal.models import Contract, Decision, JsonValue
 from resultseal.normalize import Normalization, infer_kind, normalize
@@ -41,7 +41,7 @@ from resultseal.report import (
     render_markdown,
     with_fingerprint,
 )
-from resultseal.rules import Evaluation, ReferenceClock, evaluate
+from resultseal.rules import Evaluation, ReferenceClock, evaluate, format_clock
 from resultseal.safeio import load_json, load_yaml
 
 EXIT_OK = 0
@@ -172,6 +172,21 @@ def _normalize_and_evaluate(
     return normalization, evaluation
 
 
+def _stamped_record(
+    evaluation: Evaluation,
+    normalization: Normalization,
+    contract: Contract,
+    redactions: list[str],
+) -> dict[str, JsonValue]:
+    """Build, redact, then fingerprint — the one record pipeline for emitters."""
+    record = build_record(
+        evaluation, normalization.envelope, contract, resultseal_version=__version__
+    )
+    if redactions:
+        record = redact_record(record, redactions)
+    return with_fingerprint(record)
+
+
 def _emit(
     fmt: str,
     normalization: Normalization,
@@ -180,36 +195,27 @@ def _emit(
     clock: ReferenceClock,
     redactions: list[str],
 ) -> None:
-    record = build_record(
-        evaluation, normalization.envelope, contract, resultseal_version=__version__
-    )
-    if redactions:
-        record = redact_record(record, redactions)
-    stamped = with_fingerprint(record)
+    stamped = _stamped_record(evaluation, normalization, contract, redactions)
     if fmt == "json":
         print(render_json(stamped))
-    else:
-        env = normalization.envelope
-        # Echo identity through the (possibly redacted) record so secrets do
-        # not leak into the human-readable sections.
-        print(
-            render_markdown(
-                stamped,
-                input_summary=(
-                    f"tool={env.tool_name} source={stamped['source_ref']} "
-                    f"target={env.target_ref} evidence={stamped['evidence_refs']}"
-                ),
-                normalized_state=(
-                    f"transport={env.transport_state.value} "
-                    f"observed={env.truth_state.value}"
-                ),
-                clock_note=_format_clock(clock.now),
-            )
+        return
+    env = normalization.envelope
+    # Echo identity through the (possibly redacted) record so secrets do
+    # not leak into the human-readable sections.
+    print(
+        render_markdown(
+            stamped,
+            input_summary=(
+                f"tool={env.tool_name} source={stamped['source_ref']} "
+                f"target={env.target_ref} evidence={stamped['evidence_refs']}"
+            ),
+            normalized_state=(
+                f"transport={env.transport_state.value} "
+                f"observed={env.truth_state.value}"
+            ),
+            clock_note=format_clock(clock.now),
         )
-
-
-def _format_clock(now: datetime) -> str:
-    return now.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
 
 
 def _run_check(args: argparse.Namespace) -> int:
@@ -247,24 +253,12 @@ def _replay_one(
     normalization, evaluation = _normalize_and_evaluate(raw, contract, clock)
 
     expectation = bundle.expected
-    expected_decision = (
-        Decision.SEALED if expectation.decision_literal == "sealed" else Decision.BLOCKED
-    )
-    matched = evaluation.decision is expected_decision
-    if matched and expectation.truth_state is not None:
-        matched = evaluation.truth_state is expectation.truth_state
-    if matched and expectation.reason_codes:
-        matched = all(code in evaluation.reason_codes for code in expectation.reason_codes)
+    matched = expectation_matches(expectation, evaluation)
 
     if fmt == "json":
-        record = with_fingerprint(
-            build_record(
-                evaluation, normalization.envelope, contract,
-                resultseal_version=__version__,
-            )
+        print(
+            render_json(_stamped_record(evaluation, normalization, contract, redactions))
         )
-        record = redact_record(record, redactions) if redactions else record
-        print(render_json(record))
     else:
         verdict = "MATCH" if matched else "MISMATCH"
         print(

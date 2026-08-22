@@ -19,14 +19,13 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from typing import cast
 
 from resultseal.canonical import content_hash
 from resultseal.errors import SchemaInvalidError
 from resultseal.limits import Limits
 from resultseal.models import JsonScalar, JsonValue, ObservationEnvelope, TransportState, TruthState
-from resultseal.rules import ReferenceClock
+from resultseal.rules import ReferenceClock, format_clock
 from resultseal.safeio import load_yaml
 
 _KINDS = frozenset({"http_json", "json", "yaml", "mcp", "stdio", "claim_only"})
@@ -58,12 +57,16 @@ def infer_kind(raw: Mapping[str, JsonValue]) -> str:
     return "json"
 
 
-def prepare_payload(raw: Mapping[str, JsonValue], limits: Limits | None = None) -> object:
-    """Parse the nested YAML document text of a ``kind: yaml`` input."""
+def prepare_payload(raw: Mapping[str, JsonValue]) -> object:
+    """Parse the nested YAML document text of a ``kind: yaml`` input.
+
+    Nested payloads are always parsed under the package-default ``Limits``;
+    caller-supplied limit regimes govern the outer document only.
+    """
     value = raw.get("value")
     if not isinstance(value, str):
         raise SchemaInvalidError("yaml inputs require a string 'value'")
-    return load_yaml(value.encode("utf-8"), limits or Limits())
+    return load_yaml(value.encode("utf-8"), Limits())
 
 
 def normalize(
@@ -79,11 +82,11 @@ def normalize(
         "stdio": _normalize_stdio,
         "claim_only": _normalize_claim_only,
     }[kind]
-    return handler(kind, raw, clock)
+    return handler(raw, clock)
 
 
 def _normalize_http(
-    kind: str, raw: Mapping[str, JsonValue], clock: ReferenceClock
+    raw: Mapping[str, JsonValue], clock: ReferenceClock
 ) -> Normalization:
     status = raw.get("status_code")
     if isinstance(status, bool) or not isinstance(status, int):
@@ -117,7 +120,7 @@ def _normalize_http(
 
 
 def _normalize_json(
-    kind: str, raw: Mapping[str, JsonValue], clock: ReferenceClock
+    raw: Mapping[str, JsonValue], clock: ReferenceClock
 ) -> Normalization:
     body = raw.get("body")
     payload, parse_failed = _parse_body(body)
@@ -134,7 +137,7 @@ def _normalize_json(
 
 
 def _normalize_yaml(
-    kind: str, raw: Mapping[str, JsonValue], clock: ReferenceClock
+    raw: Mapping[str, JsonValue], clock: ReferenceClock
 ) -> Normalization:
     # prepare_payload runs the nested document through safeio: unsafe tags
     # raise UnsafeInputError here, before any evaluation happens.
@@ -151,7 +154,7 @@ def _normalize_yaml(
 
 
 def _normalize_mcp(
-    kind: str, raw: Mapping[str, JsonValue], clock: ReferenceClock
+    raw: Mapping[str, JsonValue], clock: ReferenceClock
 ) -> Normalization:
     structured = raw.get("structuredContent")
     text = raw.get("text")
@@ -182,7 +185,7 @@ def _normalize_mcp(
 
 
 def _normalize_stdio(
-    kind: str, raw: Mapping[str, JsonValue], clock: ReferenceClock
+    raw: Mapping[str, JsonValue], clock: ReferenceClock
 ) -> Normalization:
     exit_code = raw.get("exit_code")
     if isinstance(exit_code, bool) or not isinstance(exit_code, int):
@@ -225,7 +228,7 @@ def _normalize_stdio(
 
 
 def _normalize_claim_only(
-    kind: str, raw: Mapping[str, JsonValue], clock: ReferenceClock
+    raw: Mapping[str, JsonValue], clock: ReferenceClock
 ) -> Normalization:
     claim = raw.get("claim")
     metadata_extra: dict[str, JsonScalar] = {}
@@ -342,7 +345,7 @@ def _envelope(
         observed_at=(
             observed_at
             if isinstance(observed_at, str)
-            else _format_clock(clock.now)
+            else format_clock(clock.now)
         ),
         content_hash=digest,
         evidence_refs=evidence_refs,
@@ -350,8 +353,3 @@ def _envelope(
         source_version=source_version,
         metadata=metadata,
     )
-
-
-def _format_clock(now: datetime) -> str:
-    utc = now.astimezone(UTC)
-    return utc.strftime("%Y-%m-%dT%H:%M:%SZ")

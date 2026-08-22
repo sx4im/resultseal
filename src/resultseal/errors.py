@@ -78,5 +78,3 @@ class LimitExceededError(UnsafeInputError):
 
 class PathEscapeError(UnsafeInputError):
     """A path resolves outside its allowed root."""
-
-    code = "UNSAFE_INPUT"
