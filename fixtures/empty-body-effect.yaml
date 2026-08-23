@@ -1,0 +1,25 @@
+fixture_version: 1
+name: empty-body-effect
+claim_type: effect_observed
+contract:
+  schema_version: "1"
+  claim_type: effect_observed
+  required_fields: []
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://writer
+  target_ref: resource:42
+  not_found_sentinel: null
+  effect_evidence_required: true
+input:
+  kind: http_json
+  status_code: 204
+  source_ref: fixture://writer
+  target_ref: resource:42
+  body: ""
+expected:
+  truth_state: empty
+  decision: blocked
+  reason_codes:
+    - EMPTY_WITHOUT_NOT_FOUND_SENTINEL

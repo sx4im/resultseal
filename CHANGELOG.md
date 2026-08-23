@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Three fixtures distilled from the first production integration (a
+  gated LinkedIn auto-poster): `bare-json-payload.yaml` pins the most
+  common integration mistake — a `kind: json` payload passed as the
+  whole input instead of riding under `body` — blocking as
+  `EMPTY_WITHOUT_NOT_FOUND_SENTINEL`; `empty-body-effect.yaml` and
+  `effect-with-recorded-facts.yaml` document the body-less-success
+  pattern as a blocked/sealed contrast pair (HTTP 204 effect claims).
+  ADAPTERS.md gains a JSON-adapter section and a body-less-success
+  section; FIXTURE_CATALOG rows added (D22).
+
 ## 0.1.1 — 2026-08-23
 
 ### Fixed

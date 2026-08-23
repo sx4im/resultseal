@@ -14,7 +14,27 @@ Recognize `structuredContent`, text content, `outputSchema`, and `isError`. Vali
 
 Capture exit code, stdout, stderr, command identity, and optional machine-readable output. A zero exit code establishes transport/process completion only. Missing stdout or an absent required field must remain `empty`, `partial`, or `unknown` according to the contract.
 
+## JSON adapter
+
+A `kind: json` input must carry its payload under `body`, exactly like the
+HTTP adapter. Top-level input fields other than `body` are observation
+metadata, never the payload — an input with identity fields but no `body`
+is an *empty* observation and blocks as `EMPTY_WITHOUT_NOT_FOUND_SENTINEL`
+(see `fixtures/bare-json-payload.yaml`). This is the most common
+integration mistake: passing the payload object itself as the whole input.
+
 ## Adapter invariants
 
 Adapters must be deterministic, bounded, redaction-aware, and side-effect-free. They must not execute returned strings, follow URLs, load imports, invoke shells, or send data outside the process.
+
+## Body-less success protocols (effect claims)
+
+Some protocols report success with an empty body — an HTTP 204 DELETE is
+the canonical case. An empty observation can never support a claim, so an
+adapter that passes the emptiness through will always block as `EMPTY_WITHOUT_NOT_FOUND_SENTINEL` (`fixtures/empty-body-effect.yaml`). The
+correct pattern is to record the structural fact the exchange *did*
+produce — the HTTP status — as the payload, and reference it in
+`evidence_refs`; an `effect_observed` contract then seals on real
+evidence (`fixtures/effect-with-recorded-facts.yaml`). Never fabricate
+semantics; record facts.
 

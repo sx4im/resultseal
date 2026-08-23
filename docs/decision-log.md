@@ -181,3 +181,29 @@ shipping an example that contradicts the implementation's own validation
 undermines the acceptance evidence, so examples are corrected once,
 recorded here. README install instructions changed to source install until
 the package is published to PyPI.
+
+## D22 — 2026-08-23 — Integration lessons: json body wrapper and body-less effect claims
+
+The first production integration (a cron agent gating LinkedIn API
+results) surfaced two adapter-level lessons. Neither changes engine
+behavior; both are now pinned as executable documentation.
+
+1. The most common integration mistake is passing the payload object as
+   the whole `kind: json` input. The adapter reads only `body`, so the
+   observation is empty and blocks as `EMPTY_WITHOUT_NOT_FOUND_SENTINEL`
+   — fail-closed, but the code does not name the mistake. Pinned by
+   `fixtures/bare-json-payload.yaml`; a JSON-adapter section in
+   ADAPTERS.md now states the rule: top-level input fields are
+   observation metadata, never the payload.
+2. Body-less success protocols (HTTP 204 DELETE) produce empty
+   observations, which can never support an effect claim — correctly
+   blocked (`fixtures/empty-body-effect.yaml`). The integration pattern
+   is to record the structural fact that did occur (the HTTP status) as
+   the payload with an `evidence_refs` reference, letting an
+   `effect_observed` contract seal on real evidence
+   (`fixtures/effect-with-recorded-facts.yaml`). ADAPTERS.md documents
+   this as "never fabricate semantics; record facts."
+
+Both fixtures replay green through the existing fixture matrix; no
+source change was required, which is itself the finding: the engine
+already drew the right line in both cases.
