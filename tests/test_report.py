@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 
+from resultseal import __version__
 from resultseal.models import (
     ClaimType,
     Contract,
@@ -22,7 +23,7 @@ from resultseal.report import (
 )
 from resultseal.rules import Evaluation
 
-VERSION = "0.1.0"
+VERSION = __version__
 
 ENVELOPE = ObservationEnvelope(
     observation_id="obs-demo",

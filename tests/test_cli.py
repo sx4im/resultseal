@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from resultseal import __version__
 from resultseal.canonical import decision_fingerprint
 from resultseal.cli import main
 
@@ -28,7 +29,7 @@ def write(tmp_path: Path, name: str, text: str) -> Path:
 
 def test_version_exits_zero(capsys) -> None:  # type: ignore[no-untyped-def]
     assert main(["version"]) == 0
-    assert capsys.readouterr().out.strip() == "0.1.0"
+    assert capsys.readouterr().out.strip() == __version__
 
 
 def test_no_command_prints_usage_exit_2(capsys) -> None:  # type: ignore[no-untyped-def]

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-08-23
 
 ### Fixed
 
@@ -13,6 +13,12 @@
   `resultseal check`. Example validation no longer skips raw-response
   shapes — each must normalize into an envelope satisfying
   `schemas/observation-envelope.v1.json` (D21).
+
+### Added
+
+- Tag-driven publish workflow: a `v*` tag runs the full gate suite,
+  builds and smoke-installs the wheel, then uploads to PyPI via trusted
+  publishing and attaches artifacts to a GitHub Release.
 - A naive-but-parseable `observed_at` under `max_age_seconds` freshness
   now blocks as `unknown`/`SCHEMA_INVALID` instead of escaping `evaluate`
   as an unclassified `TypeError` (D18).

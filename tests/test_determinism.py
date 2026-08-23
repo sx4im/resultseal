@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
+from resultseal import __version__
 from resultseal.fixtures import load_fixture_file
 from resultseal.limits import Limits
 from resultseal.normalize import normalize
@@ -28,7 +29,7 @@ def _record_for(path: Path) -> str:
         evaluation,
         normalization.envelope,
         bundle.contract,
-        resultseal_version="0.1.0",
+        resultseal_version=__version__,
     )
     return render_json(with_fingerprint(record))
 
