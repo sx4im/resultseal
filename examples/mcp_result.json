@@ -1,6 +1,8 @@
 {
+  "source_ref": "mcp://crm-server",
+  "target_ref": "customer:42",
+  "tool_name": "get_customer",
   "structuredContent": {"customer_id": "42", "name": "Ada"},
   "outputSchema": {"type": "object", "required": ["customer_id", "name"]},
   "isError": false
 }
-

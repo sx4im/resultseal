@@ -4,6 +4,15 @@
 
 ### Fixed
 
+- Shipped examples now work end to end: `examples/http_empty.json` carries
+  its body under the field name the HTTP adapter actually hashes (`body`,
+  previously the unread `response_body`, so the envelope hashed null);
+  `examples/mcp_result.json` gained the `source_ref`/`target_ref` identity
+  fields every adapter input requires; and new
+  `examples/customer_contract.json` makes both runnable through
+  `resultseal check`. Example validation no longer skips raw-response
+  shapes — each must normalize into an envelope satisfying
+  `schemas/observation-envelope.v1.json` (D21).
 - A naive-but-parseable `observed_at` under `max_age_seconds` freshness
   now blocks as `unknown`/`SCHEMA_INVALID` instead of escaping `evaluate`
   as an unclassified `TypeError` (D18).

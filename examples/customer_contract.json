@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "claim_type": "found",
+  "required_fields": ["customer_id", "name"],
+  "freshness": {"mode": "not_required"},
+  "source_ref": "mcp://crm-server",
+  "target_ref": "customer:42"
+}

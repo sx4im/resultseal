@@ -12,13 +12,34 @@ ResultSeal is a small, framework-neutral Python toolkit that prevents AI-agent w
 
 ResultSeal normalizes a tool result, applies a declarative contract, and produces a deterministic decision. Unknown and incomplete evidence is blocked by default.
 
+## Install
+
+Not on PyPI yet — install from a clone:
+
 ```bash
-pip install resultseal
-resultseal replay fixtures/empty-result.yaml
-resultseal replay fixtures/explicit-not-found.yaml
+git clone https://github.com/sx4im/resultseal.git
+cd resultseal
+pip install .
 ```
 
-The first command shows why an empty response cannot become `not_found`. The second shows how an explicit contract-approved not-found sentinel can seal safely.
+Requires Python 3.11+.
+
+## Try it
+
+```bash
+# Replay a self-contained fixture bundle against its recorded expectation
+resultseal replay fixtures/empty-result.yaml         # empty response -> blocked/empty
+resultseal replay fixtures/explicit-not-found.yaml   # approved sentinel -> sealed/not_found
+
+# Evaluate a shipped example against a shipped contract (exit 0 = sealed, 1 = blocked)
+resultseal check examples/mcp_result.json --contract examples/customer_contract.json
+resultseal check examples/http_empty.json --contract examples/customer_contract.json
+```
+
+The last two are the toolkit's thesis side by side: a complete MCP result seals,
+while an HTTP 200 carrying an empty body blocks as `empty` — it can never be
+promoted to `not_found`. All four commands print the decision record with a
+verifiable `deterministic_fingerprint`.
 
 ## Scope
 
@@ -30,8 +51,6 @@ ResultSeal is not an agent framework, proxy, dashboard, policy engine, retry mid
 make install   # editable install with dev tools
 make all       # test, lint, typecheck, build
 ```
-
-Requires Python 3.11+.
 
 ## Contributing
 

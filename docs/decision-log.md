@@ -160,3 +160,24 @@ record helper; safeio's root-kind guard is a single branch; fixture
 identity helper; and minor typing/comment fixes landed in `contracts.py`,
 `errors.py`, and two test files. All three gates (ruff, mypy strict,
 pytest) run clean after each individual change.
+
+## D21 — 2026-08-23 — Shipped examples corrected and made runnable
+
+The acceptance requirement "JSON schemas validate all shipped examples"
+was met only nominally: `tests/test_schemas.py` skipped exactly the two
+raw-response examples, and neither worked through its adapter.
+`examples/http_empty.json` carried its body under `response_body`, a field
+name no adapter reads, so the envelope's content hash covered null instead
+of the empty body the example is about; the field is renamed to `body`.
+`examples/mcp_result.json` lacked `source_ref`/`target_ref`, so it could
+not normalize at all; identity fields consistent with its payload are
+added. New `examples/customer_contract.json` pairs with both, making
+`resultseal check examples/... --contract examples/...` runnable end to
+end (sealed for the MCP result, blocked/empty for the HTTP 200). Example
+validation is strengthened from skip to assertion: every response example
+must normalize into an envelope satisfying
+`schemas/observation-envelope.v1.json`. This extends D14's precedent:
+shipping an example that contradicts the implementation's own validation
+undermines the acceptance evidence, so examples are corrected once,
+recorded here. README install instructions changed to source install until
+the package is published to PyPI.

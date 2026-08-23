@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import jsonschema
 import pytest
 import yaml
 
+from resultseal.normalize import normalize
+from resultseal.rules import ReferenceClock
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMAS = REPO_ROOT / "schemas"
 EXAMPLES = REPO_ROOT / "examples"
 FIXTURES = REPO_ROOT / "fixtures"
+
+CLOCK = ReferenceClock(now=datetime(2026, 8, 21, 10, 0, 1, tzinfo=UTC))
 
 ENVELOPE_REQUIRED = frozenset(
     {
@@ -58,8 +64,13 @@ def test_shipped_examples_validate(example: Path) -> None:
     raw = json.loads(example.read_text(encoding="utf-8"))
     if "claim_type" in raw:
         jsonschema.validate(raw, _load_schema("contract.v1.json"))
-    else:
-        pytest.skip(f"{example.name} is a raw response shape, not a document")
+        return
+    # Raw-response example: not itself a schema document, but it must
+    # normalize into an envelope that satisfies the v1 envelope schema.
+    normalization = normalize(raw, CLOCK)
+    jsonschema.validate(
+        normalization.envelope.to_dict(), _load_schema("observation-envelope.v1.json")
+    )
 
 
 @pytest.mark.parametrize(
