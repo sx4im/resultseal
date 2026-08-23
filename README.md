@@ -14,15 +14,19 @@ ResultSeal normalizes a tool result, applies a declarative contract, and produce
 
 ## Install
 
-Not on PyPI yet — install from a clone:
+```bash
+pip install resultseal
+```
+
+Requires Python 3.11+.
+
+From source instead:
 
 ```bash
 git clone https://github.com/sx4im/resultseal.git
 cd resultseal
 pip install .
 ```
-
-Requires Python 3.11+.
 
 ## Try it
 
