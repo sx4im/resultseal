@@ -286,3 +286,8 @@ def _run_replay(args: argparse.Namespace) -> int:
         if not _replay_one(fixture_path, args.format, clock, args.redact):
             all_matched = False
     return EXIT_OK if all_matched else EXIT_BLOCKED
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+

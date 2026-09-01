@@ -11,6 +11,8 @@ build/
 htmlcov/
 .env
 .DS_Store
+uv.lock
+
 
 resultseal_claude_code_handoff/
 

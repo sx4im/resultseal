@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -27,14 +29,24 @@ def write(tmp_path: Path, name: str, text: str) -> Path:
 # ---------------------------------------------------------------- version --
 
 
+
 def test_version_exits_zero(capsys) -> None:  # type: ignore[no-untyped-def]
     assert main(["version"]) == 0
+    assert capsys.readouterr().out.strip() == __version__
+
+
+def test_package_main_execution(capsys, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setattr(sys, "argv", ["resultseal", "version"])
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_module("resultseal", run_name="__main__")
+    assert exc_info.value.code == 0
     assert capsys.readouterr().out.strip() == __version__
 
 
 def test_no_command_prints_usage_exit_2(capsys) -> None:  # type: ignore[no-untyped-def]
     assert main([]) == 2
     assert "usage" in capsys.readouterr().err.lower()
+
 
 
 # --------------------------------------------------------------- validate --
