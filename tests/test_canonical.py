@@ -62,3 +62,10 @@ def test_fingerprint_excludes_itself() -> None:
     with_self = dict(record, deterministic_fingerprint="sha256:" + "f" * 64)
     assert decision_fingerprint(with_self) == decision_fingerprint(record)
     assert _SHA256_RE.fullmatch(decision_fingerprint(record))
+
+
+def test_negative_zero_canonical_hash_identity() -> None:
+    hash_pos = content_hash({"val": 0.0})
+    hash_neg = content_hash({"val": -0.0})
+    assert canonical_json({"val": -0.0}) == b'{"val":0.0}'
+    assert hash_neg == hash_pos

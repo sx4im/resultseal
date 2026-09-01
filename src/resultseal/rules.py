@@ -78,7 +78,7 @@ def evaluate(
     clock: ReferenceClock,
 ) -> Evaluation:
     """Decide whether *payload* may support the contract's claim. Pure."""
-    if envelope.transport_state is TransportState.ATTEMPTED:
+    if envelope.transport_state in (TransportState.ATTEMPTED, TransportState.DISPATCHED):
         return Evaluation(Decision.BLOCKED, TruthState.UNKNOWN, ("NO_DISPATCH",))
     if envelope.transport_state is TransportState.TRANSPORT_ERROR:
         # Nothing was observed, so the truthful classification is unknown;
@@ -94,6 +94,12 @@ def evaluate(
         )
 
     sentinel_matched = _sentinel_matched(payload, contract.not_found_sentinel)
+    if contract.claim_type is ClaimType.NOT_FOUND and not sentinel_matched:
+        return Evaluation(
+            Decision.BLOCKED,
+            TruthState.EMPTY if _unusable(payload) else TruthState.OBSERVED,
+            ("EMPTY_WITHOUT_NOT_FOUND_SENTINEL",),
+        )
     if _unusable(payload) and not sentinel_matched:
         return Evaluation(
             Decision.BLOCKED,
@@ -194,7 +200,7 @@ def _freshness_failure(
             )
         assert contract.max_age_seconds is not None  # guaranteed by Contract
         age = (clock.now - observed).total_seconds()
-        if age > contract.max_age_seconds:
+        if age < 0 or age > contract.max_age_seconds:
             return Evaluation(
                 Decision.BLOCKED, TruthState.STALE, ("STALE_OBSERVATION",)
             )

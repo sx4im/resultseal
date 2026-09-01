@@ -207,3 +207,14 @@ behavior; both are now pinned as executable documentation.
 Both fixtures replay green through the existing fixture matrix; no
 source change was required, which is itself the finding: the engine
 already drew the right line in both cases.
+
+## D23 — 2026-09-01 — Hardening core decision invariants, model immutability, and canonical serialization
+
+A deep code audit identified and resolved five safety edge cases:
+
+1. `ClaimType.NOT_FOUND` previously bypassed sentinel validation when evaluated against populated payloads, leading to false-positive `SEALED` decisions for existing entities. `evaluate()` now strictly blocks non-sentinel matches as `EMPTY_WITHOUT_NOT_FOUND_SENTINEL`.
+2. `TransportState.DISPATCHED` was omitted from transport checks, allowing in-flight/unexecuted dispatches with attached payloads to bypass transport checks. It is now blocked as `NO_DISPATCH`.
+3. `ObservationEnvelope.metadata` passed direct mutable dicts to the dataclass; `__post_init__` now converts any `Mapping` to an immutable `MappingProxyType`.
+4. `FreshnessMode.MAX_AGE_SECONDS` evaluated `age = clock.now - observed` and passed negative age (`observed` in the future) as `<= max_age_seconds`. Future timestamps are now rejected as `STALE_OBSERVATION`.
+5. Canonical JSON now normalizes float `-0.0` to `0.0` to eliminate content-hash divergence for mathematically equivalent floating-point zeros.
+

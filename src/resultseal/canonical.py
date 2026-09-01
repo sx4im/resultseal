@@ -22,9 +22,10 @@ FINGERPRINT_KEY = "deterministic_fingerprint"
 def canonical_json(obj: JsonValue) -> bytes:
     """Serialize to canonical bytes or raise SchemaInvalidError."""
     _validate(obj)
+    normalized = _normalize(obj)
     try:
         text = json.dumps(
-            obj,
+            normalized,
             sort_keys=True,
             separators=(",", ":"),
             ensure_ascii=False,
@@ -47,6 +48,16 @@ def decision_fingerprint(record: Mapping[str, JsonValue]) -> str:
     """``sha256:<hex>`` over the record minus its own fingerprint field."""
     trimmed = {k: v for k, v in record.items() if k != FINGERPRINT_KEY}
     return content_hash(trimmed)
+
+
+def _normalize(obj: JsonValue) -> JsonValue:
+    if isinstance(obj, float):
+        return 0.0 if obj == 0.0 else obj
+    if isinstance(obj, dict):
+        return {k: _normalize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_normalize(item) for item in obj]
+    return obj
 
 
 def _validate(obj: JsonValue) -> None:

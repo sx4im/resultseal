@@ -61,6 +61,18 @@ def test_no_dispatch_blocks_even_with_perfect_payload() -> None:
     assert result.reason_codes == ("NO_DISPATCH",)
 
 
+def test_dispatched_transport_state_blocks() -> None:
+    result = evaluate(
+        env(transport_state=TransportState.DISPATCHED),
+        FULL,
+        read_contract(),
+        CLOCK,
+    )
+    assert result.decision is Decision.BLOCKED
+    assert result.truth_state is TruthState.UNKNOWN
+    assert result.reason_codes == ("NO_DISPATCH",)
+
+
 def test_transport_error_blocks() -> None:
     result = evaluate(
         env(transport_state=TransportState.TRANSPORT_ERROR), None, read_contract(), CLOCK
@@ -101,6 +113,21 @@ def test_empty_is_never_not_found() -> None:
     result = evaluate(env(), "", contract, CLOCK)
     assert result.truth_state is TruthState.EMPTY
     assert result.decision is Decision.BLOCKED
+
+
+def test_not_found_claim_with_found_payload_blocks() -> None:
+    contract = read_contract(
+        claim_type=ClaimType.NOT_FOUND,
+        required_fields=(),
+        freshness_mode=FreshnessMode.NOT_REQUIRED,
+        min_source_version=None,
+        not_found_sentinel="DOES_NOT_EXIST",
+    )
+    payload = {"customer_id": "42", "name": "Ada Lovelace", "status": "ACTIVE"}
+    result = evaluate(env(), payload, contract, CLOCK)
+    assert result.decision is Decision.BLOCKED
+    assert result.truth_state is TruthState.OBSERVED
+    assert result.reason_codes == ("EMPTY_WITHOUT_NOT_FOUND_SENTINEL",)
 
 
 def test_explicit_sentinel_seals_not_found() -> None:
@@ -245,6 +272,20 @@ def test_max_age_stale_blocks() -> None:
     )
     result = evaluate(env(observed_at="2026-08-21T09:00:00Z"), FULL, contract, CLOCK)
     assert result.truth_state is TruthState.STALE
+
+
+def test_future_timestamp_fails_freshness() -> None:
+    contract = read_contract(
+        freshness_mode=FreshnessMode.MAX_AGE_SECONDS,
+        max_age_seconds=60,
+        min_source_version=None,
+    )
+    # observed_at is in the future relative to CLOCK (2026-08-21T12:00:00Z)
+    future_env = env(observed_at="2026-08-21T12:05:00Z")
+    result = evaluate(future_env, FULL, contract, CLOCK)
+    assert result.decision is Decision.BLOCKED
+    assert result.truth_state is TruthState.STALE
+    assert result.reason_codes == ("STALE_OBSERVATION",)
 
 
 def test_max_age_fresh_seals() -> None:

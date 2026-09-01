@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import FrozenInstanceError
+from types import MappingProxyType
 
 import pytest
 
@@ -109,6 +110,14 @@ def test_envelope_frozen() -> None:
     env = envelope()
     with pytest.raises(FrozenInstanceError):
         env.tool_name = "other"  # type: ignore[misc]
+
+
+def test_envelope_metadata_is_immutable_mapping_proxy() -> None:
+    raw_meta = {"key": "value"}
+    e = envelope(metadata=raw_meta)
+    assert isinstance(e.metadata, MappingProxyType)
+    with pytest.raises(TypeError):
+        e.metadata["key"] = "new_value"  # type: ignore[index]
 
 
 def test_envelope_roundtrip_json() -> None:

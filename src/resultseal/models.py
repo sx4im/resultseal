@@ -157,6 +157,8 @@ class ObservationEnvelope:
         if self.source_version is not None:
             _check_str(self.source_version, "source_version", max_len=256)
         _check_metadata(self.metadata)
+        if not isinstance(self.metadata, MappingProxyType):
+            object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
 
     def to_dict(self) -> dict[str, JsonValue]:
         return {
