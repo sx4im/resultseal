@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" width="96" height="96" alt="ResultSeal Logo" />
+</p>
+
 # ResultSeal
 
 [![CI](https://github.com/sx4im/resultseal/actions/workflows/ci.yml/badge.svg)](https://github.com/sx4im/resultseal/actions/workflows/ci.yml)

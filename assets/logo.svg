@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Precision Outer Polygon: Hexagonal Verification Perimeter -->
+  <polygon points="50,4 92,26 92,74 50,96 8,74 8,26" stroke="#30363D" stroke-width="2.5" fill="#0D1117" />
+
+  <!-- Technical Caliper Tick Marks -->
+  <line x1="50" y1="4" x2="50" y2="10" stroke="#30A46C" stroke-width="2" stroke-linecap="round" />
+  <line x1="92" y1="74" x2="86.8" y2="71" stroke="#30A46C" stroke-width="2" stroke-linecap="round" />
+  <line x1="8" y1="74" x2="13.2" y2="71" stroke="#30A46C" stroke-width="2" stroke-linecap="round" />
+
+  <!-- Inner Verification Seal: Geometric Shield Structure -->
+  <path d="M50 16 L80 32 V54 C80 72 50 84 50 84 C50 84 20 72 20 54 V32 Z"
+        fill="#161B22" stroke="#30A46C" stroke-width="2.5" stroke-linejoin="round" />
+
+  <!-- The "Seal" Anchor: Precision Isometric Hex-Core -->
+  <polygon points="50,33 66,42 66,60 50,69 34,60 34,42" fill="#0D1117" stroke="#30363D" stroke-width="1.5" />
+
+  <!-- Center Verified Keymark: Minimal Mathematical Check -->
+  <path d="M43 51 L48 56 L58 45" stroke="#30A46C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
