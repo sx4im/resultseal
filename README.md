@@ -9,6 +9,13 @@
 
 ResultSeal is a small, framework-neutral Python toolkit that prevents AI-agent workflows from promoting empty, partial, stale, source-mismatched, or unverified tool results into factual claims. Shipped adapters cover raw JSON, HTTP responses, MCP-style tool results (`structuredContent` / `isError` / `outputSchema`), and stdio process output — each establishing structural facts only (see [docs/specs/ADAPTERS.md](docs/specs/ADAPTERS.md)).
 
+```
+  ┌─────────────────┐       ┌──────────────┐       ┌──────────────────────┐
+  │ Raw Tool Output │ ───>  │  ResultSeal  │ ───>  │ SEALED  ─> Agent OK  │
+  │ (HTTP/MCP/JSON) │       │   Contract   │       │ BLOCKED ─> Halt/Err  │
+  └─────────────────┘       └──────────────┘       └──────────────────────┘
+```
+
 ## Why ResultSeal
 
 AI agents frequently suffer from false-success hallucinations: treating empty search responses as proof of absence, or transport-level HTTP 200s as verified effects. Standard schema validators only verify payload shape—ResultSeal enforces observation integrity:
@@ -110,4 +117,13 @@ Contributions are warmly welcome! Whether you are:
 - Improving documentation or adding production contract recipes
 
 Check out [CONTRIBUTING.md](CONTRIBUTING.md) to get set up in under two minutes.
+
+## Contributors
+
+Thanks to the contributors who have improved ResultSeal:
+
+<a href="https://github.com/sx4im/resultseal/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=sx4im/resultseal" alt="Contributors" />
+</a>
+
 
