@@ -8,6 +8,7 @@ must normalize cleanly and hash the content its adapter actually reads.
 from __future__ import annotations
 
 import json
+import runpy
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -49,3 +50,12 @@ def test_example_normalizes_cleanly(example: Path) -> None:
         pytest.skip("contract document, not a raw response")
     normalization = normalize(raw, CLOCK)
     assert normalization.envelope.transport_state is not None
+
+
+def test_pydantic_ai_example_blocks_empty_tool_result() -> None:
+    """The framework-free guard is testable without optional Pydantic-AI."""
+    namespace = runpy.run_path(EXAMPLES / "pydantic_ai_guard.py")
+    with pytest.raises(
+        namespace["BlockedObservation"], match="EMPTY_WITHOUT_NOT_FOUND_SENTINEL"
+    ):
+        namespace["guard_customer_result"]([])
