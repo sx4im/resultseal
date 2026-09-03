@@ -18,6 +18,7 @@ reference clock); reports never carry it.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -50,6 +51,18 @@ EXIT_INVALID = 2
 EXIT_UNSAFE = 3
 
 _LIMITS = Limits()
+
+_GREEN = "\033[32m"
+_RED = "\033[31m"
+_RESET = "\033[0m"
+
+
+def _color_verdict(verdict: str) -> str:
+    """Highlight verdicts only on an interactive, color-enabled stdout."""
+    if "NO_COLOR" in os.environ or not sys.stdout.isatty():
+        return verdict
+    color = _GREEN if verdict in {"sealed", "MATCH"} else _RED
+    return f"{color}{verdict}{_RESET}"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -202,20 +215,20 @@ def _emit(
     env = normalization.envelope
     # Echo identity through the (possibly redacted) record so secrets do
     # not leak into the human-readable sections.
-    print(
-        render_markdown(
-            stamped,
-            input_summary=(
-                f"tool={env.tool_name} source={stamped['source_ref']} "
-                f"target={env.target_ref} evidence={stamped['evidence_refs']}"
-            ),
-            normalized_state=(
-                f"transport={env.transport_state.value} "
-                f"observed={env.truth_state.value}"
-            ),
-            clock_note=format_clock(clock.now),
-        )
+    report = render_markdown(
+        stamped,
+        input_summary=(
+            f"tool={env.tool_name} source={stamped['source_ref']} "
+            f"target={env.target_ref} evidence={stamped['evidence_refs']}"
+        ),
+        normalized_state=(
+            f"transport={env.transport_state.value} "
+            f"observed={env.truth_state.value}"
+        ),
+        clock_note=format_clock(clock.now),
     )
+    verdict = evaluation.decision.value
+    print(report.replace(f"\n{verdict} (", f"\n{_color_verdict(verdict)} (", 1))
 
 
 def _run_check(args: argparse.Namespace) -> int:
@@ -262,7 +275,7 @@ def _replay_one(
     else:
         verdict = "MATCH" if matched else "MISMATCH"
         print(
-            f"{verdict}: {bundle.name} -> "
+            f"{_color_verdict(verdict)}: {bundle.name} -> "
             f"{evaluation.truth_state.value}/{evaluation.decision.value}"
         )
         if not matched:

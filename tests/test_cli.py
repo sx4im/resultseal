@@ -11,13 +11,27 @@ import pytest
 
 from resultseal import __version__
 from resultseal.canonical import decision_fingerprint
-from resultseal.cli import main
+from resultseal.cli import _color_verdict, main
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = REPO_ROOT / "fixtures"
 EXAMPLES = REPO_ROOT / "examples"
 
 CLOCK = "--now=2026-08-21T12:00:00Z"
+
+
+def test_verdict_color_requires_tty(monkeypatch, capsys) -> None:  # type: ignore[no-untyped-def]
+    assert _color_verdict("sealed") == "sealed"
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True)
+    assert _color_verdict("sealed") == "\033[32msealed\033[0m"
+    assert _color_verdict("MISMATCH") == "\033[31mMISMATCH\033[0m"
+
+
+def test_no_color_disables_verdict_color(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True)
+    monkeypatch.setenv("NO_COLOR", "")
+    assert _color_verdict("BLOCKED") == "BLOCKED"
 
 
 def write(tmp_path: Path, name: str, text: str) -> Path:
