@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResultSeal Interactive Playground — Deterministic AI Tool Contracts</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20width=%22100%22%20height=%22100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-bright: #f0f6fc;
+      --text-muted: #8b949e;
+      --green: #2ea043;
+      --green-bg: rgba(46, 160, 67, 0.15);
+      --red: #f85149;
+      --red-bg: rgba(248, 81, 73, 0.15);
+      --code-bg: #090d12;
+      --accent: #58a6ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 32px 20px;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-bright);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tagline {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .header-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 16px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      transition: border-color 0.2s;
+    }
+    .header-links a:hover {
+      border-color: var(--accent);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-header {
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-bright);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .presets {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .presets span {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .preset-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preset-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-bright);
+    }
+    .preset-btn.active {
+      background: #1f2937;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    textarea {
+      width: 100%;
+      height: 280px;
+      background: var(--code-bg);
+      border: none;
+      color: #e6edf3;
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: 13px;
+      padding: 14px;
+      resize: vertical;
+      line-height: 1.4;
+      outline: none;
+    }
+    .action-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+    .btn-run {
+      background: var(--green);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 10px 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
+      transition: opacity 0.2s;
+    }
+    .btn-run:hover {
+      opacity: 0.9;
+    }
+    .verdict-box {
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: none;
+      border: 1px solid;
+    }
+    .verdict-box.sealed {
+      display: block;
+      background: var(--green-bg);
+      border-color: var(--green);
+    }
+    .verdict-box.blocked {
+      display: block;
+      background: var(--red-bg);
+      border-color: var(--red);
+    }
+    .verdict-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .verdict-box.sealed .verdict-title { color: #3fb950; }
+    .verdict-box.blocked .verdict-title { color: #f85149; }
+    .verdict-desc {
+      font-size: 14px;
+      color: var(--text-bright);
+    }
+    .verdict-details {
+      margin-top: 12px;
+      font-family: "SF Mono", Consolas, monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🛡️ ResultSeal Playground</h1>
+        <div class="tagline">Deterministic observation-integrity gate for AI agent tool results.</div>
+      </div>
+      <div class="header-links">
+        <a href="https://github.com/sx4im/resultseal" target="_blank">GitHub</a>
+        <a href="https://pypi.org/project/resultseal/" target="_blank">PyPI v0.1.2</a>
+      </div>
+    </header>
+
+    <div class="presets">
+      <span>Scenarios:</span>
+      <button class="preset-btn active" onclick="loadPreset('empty_sql')">1. Empty SQL Result (Blocked)</button>
+      <button class="preset-btn" onclick="loadPreset('valid_mcp')">2. Complete MCP Result (Sealed)</button>
+      <button class="preset-btn" onclick="loadPreset('http_empty')">3. HTTP 200 Empty Body (Blocked)</button>
+      <button class="preset-btn" onclick="loadPreset('mcp_error')">4. MCP Error with Body (Blocked)</button>
+      <button class="preset-btn" onclick="loadPreset('sentinel_found')">5. Explicit Not-Found Sentinel (Sealed)</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span>Raw Tool Observation (JSON)</span>
+        </div>
+        <textarea id="rawInput"></textarea>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span>Observation Contract (JSON)</span>
+        </div>
+        <textarea id="contractInput"></textarea>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn-run" onclick="evaluateContract()">Evaluate Observation Contract</button>
+    </div>
+
+    <div id="verdictBox" class="verdict-box">
+      <div id="verdictTitle" class="verdict-title"></div>
+      <div id="verdictDesc" class="verdict-desc"></div>
+      <div id="verdictDetails" class="verdict-details"></div>
+    </div>
+
+    <footer>
+      ResultSeal is a minimal, fail-closed Python toolkit. HTTP 200 is not an observation. Empty is not not-found.
+    </footer>
+  </div>
+
+  <script>
+    const PRESETS = {
+      empty_sql: {
+        raw: {
+          "kind": "json",
+          "source_ref": "fixture://database",
+          "target_ref": "users:email:alice@example.com",
+          "tool_name": "sql_query",
+          "body": []
+        },
+        contract: {
+          "schema_version": "1",
+          "claim_type": "found",
+          "required_fields": ["rows"],
+          "source_ref": "fixture://database",
+          "target_ref": "users:email:alice@example.com",
+          "not_found_sentinel": null,
+          "freshness": { "mode": "not_required" }
+        }
+      },
+      valid_mcp: {
+        raw: {
+          "kind": "mcp",
+          "source_ref": "mcp://crm-server",
+          "target_ref": "customer:42",
+          "tool_name": "get_customer",
+          "body": {
+            "customer_id": "42",
+            "name": "Ada Lovelace",
+            "status": "active"
+          }
+        },
+        contract: {
+          "schema_version": "1",
+          "claim_type": "read_complete",
+          "required_fields": ["customer_id", "name"],
+          "source_ref": "mcp://crm-server",
+          "target_ref": "customer:42",
+          "not_found_sentinel": null,
+          "freshness": { "mode": "not_required" }
+        }
+      },
+      http_empty: {
+        raw: {
+          "kind": "http_json",
+          "status_code": 200,
+          "source_ref": "https://api.crm.internal/v1",
+          "target_ref": "customer:42",
+          "body": ""
+        },
+        contract: {
+          "schema_version": "1",
+          "claim_type": "found",
+          "required_fields": ["customer_id"],
+          "source_ref": "https://api.crm.internal/v1",
+          "target_ref": "customer:42",
+          "not_found_sentinel": null,
+          "freshness": { "mode": "not_required" }
+        }
+      },
+      mcp_error: {
+        raw: {
+          "kind": "mcp",
+          "source_ref": "mcp://tools",
+          "target_ref": "user:admin",
+          "isError": true,
+          "content": [{ "type": "text", "text": "Permission denied" }]
+        },
+        contract: {
+          "schema_version": "1",
+          "claim_type": "found",
+          "source_ref": "mcp://tools",
+          "target_ref": "user:admin",
+          "freshness": { "mode": "not_required" }
+        }
+      },
+      sentinel_found: {
+        raw: {
+          "kind": "json",
+          "source_ref": "fixture://directory",
+          "target_ref": "customer:42",
+          "body": {
+            "status": "NOT_FOUND"
+          }
+        },
+        contract: {
+          "schema_version": "1",
+          "claim_type": "not_found",
+          "source_ref": "fixture://directory",
+          "target_ref": "customer:42",
+          "not_found_sentinel": "NOT_FOUND",
+          "freshness": { "mode": "not_required" }
+        }
+      }
+    };
+
+    function loadPreset(key) {
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      const p = PRESETS[key];
+      document.getElementById('rawInput').value = JSON.stringify(p.raw, null, 2);
+      document.getElementById('contractInput').value = JSON.stringify(p.contract, null, 2);
+      evaluateContract();
+    }
+
+    function evaluateContract() {
+      const box = document.getElementById('verdictBox');
+      const title = document.getElementById('verdictTitle');
+      const desc = document.getElementById('verdictDesc');
+      const details = document.getElementById('verdictDetails');
+
+      box.className = "verdict-box";
+
+      try {
+        const raw = JSON.parse(document.getElementById('rawInput').value);
+        const contract = JSON.parse(document.getElementById('contractInput').value);
+
+        // Core ResultSeal logic emulation (R8.1)
+        if (raw.isError === true) {
+          box.classList.add('blocked');
+          title.innerHTML = "⛔ BLOCKED";
+          desc.innerText = "Protocol Conflict: Tool returned isError=true. Error payload cannot be promoted as an observation.";
+          details.innerText = "truth_state: unknown | reason_codes: [PROTOCOL_CONFLICT]";
+          return;
+        }
+
+        const body = raw.body !== undefined ? raw.body : raw.content;
+        const isEmpty = body === "" || body === null || body === undefined ||
+                        (Array.isArray(body) && body.length === 0) ||
+                        (typeof body === 'object' && Object.keys(body).length === 0);
+
+        const sentinel = contract.not_found_sentinel;
+        const sentinelMatched = sentinel && (
+          body === sentinel ||
+          (typeof body === 'object' && body !== null && Object.values(body).includes(sentinel))
+        );
+
+        if (isEmpty && !sentinelMatched) {
+          box.classList.add('blocked');
+          title.innerHTML = "⛔ BLOCKED";
+          desc.innerText = "Empty observation: Tool returned empty/null payload without an approved not-found sentinel. ResultSeal prevents hallucinating 'entity does not exist'.";
+          details.innerText = "truth_state: empty | reason_codes: [EMPTY_WITHOUT_NOT_FOUND_SENTINEL]";
+          return;
+        }
+
+        if (contract.claim_type === "not_found" && !sentinelMatched) {
+          box.classList.add('blocked');
+          title.innerHTML = "⛔ BLOCKED";
+          desc.innerText = "Not-Found Claim Missing Sentinel: Contract required not_found claim, but payload does not carry sentinel '" + sentinel + "'.";
+          details.innerText = "truth_state: observed | reason_codes: [EMPTY_WITHOUT_NOT_FOUND_SENTINEL]";
+          return;
+        }
+
+        if (raw.source_ref !== contract.source_ref || raw.target_ref !== contract.target_ref) {
+          box.classList.add('blocked');
+          title.innerHTML = "⛔ BLOCKED";
+          desc.innerText = "Identity Mismatch: Observation source_ref or target_ref contradicts contract identity.";
+          details.innerText = "truth_state: source_mismatch | reason_codes: [SOURCE_MISMATCH, TARGET_MISMATCH]";
+          return;
+        }
+
+        if (contract.required_fields && Array.isArray(contract.required_fields)) {
+          const missing = contract.required_fields.filter(f => !body || body[f] === undefined);
+          if (missing.length > 0) {
+            box.classList.add('blocked');
+            title.innerHTML = "⛔ BLOCKED";
+            desc.innerText = "Missing Required Fields: Payload is missing fields [" + missing.join(", ") + "].";
+            details.innerText = "truth_state: partial | reason_codes: [MISSING_REQUIRED_FIELD]";
+            return;
+          }
+        }
+
+        // All invariants satisfied
+        box.classList.add('sealed');
+        title.innerHTML = "✅ SEALED";
+        const truth = contract.claim_type === "not_found" ? "not_found" : "sealed";
+        desc.innerText = "Observation Integrity Verified: Safe for downstream model promotion.";
+        details.innerText = "truth_state: " + truth + " | reason_codes: [SEALED_WITH_REQUIRED_EVIDENCE]";
+
+      } catch (err) {
+        box.classList.add('blocked');
+        title.innerHTML = "⚠️ PARSE ERROR";
+        desc.innerText = "Invalid JSON in input or contract: " + err.message;
+        details.innerText = "truth_state: parse_error | reason_codes: [PARSE_FAILED]";
+      }
+    }
+
+    // Initialize default preset on load
+    loadPreset('empty_sql');
+  </script>
+</body>
+</html>
