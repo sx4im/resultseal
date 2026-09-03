@@ -1,0 +1,26 @@
+fixture_version: 1
+name: sql-empty-query
+claim_type: found
+contract:
+  schema_version: "1"
+  claim_type: found
+  required_fields:
+    - rows
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://database
+  target_ref: users:email:user@example.com
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: json
+  source_ref: fixture://database
+  target_ref: users:email:user@example.com
+  tool_name: sql_query
+  body: []
+expected:
+  truth_state: empty
+  decision: blocked
+  reason_codes:
+    - EMPTY_WITHOUT_NOT_FOUND_SENTINEL

@@ -1,18 +1,24 @@
 # Changelog
 
-## Unreleased
+## [0.1.2] — 2026-09-03
 
 ### Added
 
-- Three fixtures distilled from the first production integration (a
-  gated LinkedIn auto-poster): `bare-json-payload.yaml` pins the most
-  common integration mistake — a `kind: json` payload passed as the
-  whole input instead of riding under `body` — blocking as
-  `EMPTY_WITHOUT_NOT_FOUND_SENTINEL`; `empty-body-effect.yaml` and
-  `effect-with-recorded-facts.yaml` document the body-less-success
-  pattern as a blocked/sealed contrast pair (HTTP 204 effect claims).
-  ADAPTERS.md gains a JSON-adapter section and a body-less-success
-  section; FIXTURE_CATALOG rows added (D22).
+- Interactive CLI verdict coloring (`feat(cli): color interactive verdicts`):
+  highlights `sealed` / `MATCH` in green and `blocked` / `MISMATCH` in red on
+  interactive terminals (`sys.stdout.isatty()`). Respects `NO_COLOR` and leaves
+  JSON output byte-deterministic (#4, PR #6).
+- Offline Pydantic-AI agent tool result guard example (`examples/pydantic_ai_guard.py`)
+  demonstrating observation integrity validation before returning tool results to
+  the agent loop (#3, PR #5).
+- SQL empty-result fixture (`fixtures/sql-empty-query.yaml`) demonstrating that database
+  query empty results fail-closed as `EMPTY_WITHOUT_NOT_FOUND_SENTINEL` (#2).
+- Hardened core invariants (D23): fail-closed NOT_FOUND claim checks, DISPATCHED
+  transport state checking, MappingProxyType immutable metadata, future timestamp
+  rejection, and float -0.0 canonical JSON normalization.
+- Three fixtures from production LinkedIn automation integration (D22):
+  `bare-json-payload.yaml`, `empty-body-effect.yaml`, and
+  `effect-with-recorded-facts.yaml`.
 
 ## 0.1.1 — 2026-08-23
 
