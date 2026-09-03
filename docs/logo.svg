@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background Glow -->
+    <radialGradient id="sealGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.18" />
+      <stop offset="60%" stop-color="#4FACFE" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Upper Clasp Gradient (Electric Cyan -> Bright Emerald) -->
+    <linearGradient id="upperClasp" x1="20%" y1="10%" x2="85%" y2="75%">
+      <stop offset="0%" stop-color="#00F5A0" />
+      <stop offset="50%" stop-color="#00D9F5" />
+      <stop offset="100%" stop-color="#007CF0" />
+    </linearGradient>
+
+    <!-- Lower Clasp Gradient (Deep Royal Blue -> Vivid Teal) -->
+    <linearGradient id="lowerClasp" x1="80%" y1="90%" x2="15%" y2="25%">
+      <stop offset="0%" stop-color="#007CF0" />
+      <stop offset="50%" stop-color="#00DFD8" />
+      <stop offset="100%" stop-color="#00F5A0" />
+    </linearGradient>
+
+    <!-- Inner Core Gradient -->
+    <linearGradient id="coreGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#79FFE1" />
+    </linearGradient>
+
+    <!-- Soft Ambient Shadow -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Light Backing -->
+  <circle cx="80" cy="80" r="70" fill="url(#sealGlow)" />
+
+  <!-- The Interlocking Seal System (Rotational Dual-Clasp) -->
+  <g filter="url(#shadow)">
+    <!-- Primary Clasp: The Incoming Observation (Top & Right) -->
+    <path d="M 80 22
+             C 105 22, 126 38, 134 60
+             C 137 68, 134 76, 125 78
+             C 116 80, 110 74, 107 67
+             C 102 52, 88 42, 73 44
+             C 61 46, 52 54, 48 66
+             L 38 60
+             C 45 40, 60 22, 80 22 Z"
+          fill="url(#upperClasp)" />
+
+    <!-- Complementary Clasp: The Verification Contract (Bottom & Left) -->
+    <path d="M 80 138
+             C 55 138, 34 122, 26 100
+             C 23 92, 26 84, 35 82
+             C 44 80, 50 86, 53 93
+             C 58 108, 72 118, 87 116
+             C 99 114, 108 106, 112 94
+             L 122 100
+             C 115 120, 100 138, 80 138 Z"
+          fill="url(#lowerClasp)" />
+
+    <!-- Upper Interlocking Anchor Node -->
+    <path d="M 52 64
+             C 54 52, 66 44, 78 46
+             L 86 62
+             C 74 62, 64 68, 60 76
+             Z"
+          fill="#00F5A0" opacity="0.85" />
+
+    <!-- Lower Interlocking Anchor Node -->
+    <path d="M 108 96
+             C 106 108, 94 116, 82 114
+             L 74 98
+             C 86 98, 96 92, 100 84
+             Z"
+          fill="#007CF0" opacity="0.85" />
+
+    <!-- The Sealed Core: Precision Diamond Aperture -->
+    <polygon points="80,62 95,80 80,98 65,80"
+             fill="url(#coreGlow)" />
+
+    <!-- Micro Calibration Core Center -->
+    <circle cx="80" cy="80" r="4.5" fill="#0D1117" />
+    <circle cx="80" cy="80" r="2" fill="#00F5A0" />
+  </g>
+
+  <!-- Technical Matrix Accent Dots (Subtle Algorithmic Coordinate Markers) -->
+  <circle cx="80" cy="14" r="1.5" fill="#00F5A0" opacity="0.6" />
+  <circle cx="146" cy="80" r="1.5" fill="#00D9F5" opacity="0.6" />
+  <circle cx="80" cy="146" r="1.5" fill="#007CF0" opacity="0.6" />
+  <circle cx="14" cy="80" r="1.5" fill="#00DFD8" opacity="0.6" />
+</svg>
