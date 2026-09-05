@@ -59,3 +59,12 @@ def test_pydantic_ai_example_blocks_empty_tool_result() -> None:
         namespace["BlockedObservation"], match="EMPTY_WITHOUT_NOT_FOUND_SENTINEL"
     ):
         namespace["guard_customer_result"]([])
+
+def test_langchain_example_blocks_empty_tool_result() -> None:
+    """The framework-free LangChain guard blocks empty results."""
+    namespace = runpy.run_path(EXAMPLES / "langchain_tool_guard.py")
+    with pytest.raises(
+        namespace["BlockedObservation"],
+        match="EMPTY_WITHOUT_NOT_FOUND_SENTINEL",
+    ):
+        namespace["guard_search_result"]([])
