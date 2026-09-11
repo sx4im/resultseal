@@ -81,6 +81,7 @@ def test_truth_states_exhaustive() -> None:
         "stale",
         "source_mismatch",
         "unverified_effect",
+        "transport_error",
         "parse_error",
         "unknown",
         "sealed",

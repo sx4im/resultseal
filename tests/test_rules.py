@@ -77,8 +77,8 @@ def test_transport_error_blocks() -> None:
     result = evaluate(
         env(transport_state=TransportState.TRANSPORT_ERROR), None, read_contract(), CLOCK
     )
-    assert result.truth_state is TruthState.UNKNOWN
-    assert result.reason_codes == ("TRANSPORT_FAILED",)
+    assert result.truth_state is TruthState.TRANSPORT_ERROR
+    assert result.reason_codes == ("TRANSPORT_ERROR",)
 
 
 def test_parse_error_blocks() -> None:
