@@ -1,12 +1,21 @@
 # Changelog
 
-## Unreleased
+## [0.1.3] — 2026-09-12
 
 ### Added
 
-- HTTP 404 structured-error fixture proving that error response bodies cannot
-  be promoted to domain `not_found` claims; transport failures block with
-  `unknown` / `TRANSPORT_FAILED` (#18).
+- HTTP 404 structured-error fixture (`fixtures/http-404-structured-error.yaml`)
+  proving that error response bodies cannot be promoted to domain `not_found`
+  claims; transport failures block with `unknown` / `TRANSPORT_FAILED` (#18, PR #22).
+- GraphQL HTTP 200 partial-error fixture (`fixtures/graphql-error-200.yaml`)
+  demonstrating fail-closed `partial` evaluation (`MISSING_REQUIRED_FIELD`) for
+  non-empty response envelopes carrying `data: null` and errors (#8, PR #16).
+- Redis GET key-miss nil response fixture (`fixtures/redis-nil-response.yaml`)
+  demonstrating `empty` classification on cache misses (#12, PR #14).
+- Agent framework tool guard examples: LangGraph (`examples/langgraph_tool_guard.py`),
+  CrewAI (`examples/crewai_tool_guard.py`), LlamaIndex (`examples/llamaindex_tool_guard.py`),
+  and LangChain (`examples/langchain_tool_guard.py`).
+- High-resolution transparent vector brand assets and GitHub Pages playground.
 
 ## [0.1.2] — 2026-09-03
 
