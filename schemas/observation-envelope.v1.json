@@ -12,7 +12,7 @@
     "tool_name": {"type": "string", "minLength": 1, "maxLength": 256},
     "target_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
     "transport_state": {"enum": ["attempted", "dispatched", "transported", "transport_error"]},
-    "truth_state": {"enum": ["observed", "complete", "empty", "not_found", "partial", "stale", "source_mismatch", "unverified_effect", "parse_error", "unknown", "sealed"]},
+    "truth_state": {"enum": ["observed", "complete", "empty", "not_found", "partial", "stale", "source_mismatch", "unverified_effect", "transport_error", "parse_error", "unknown", "sealed"]},
     "source_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
     "observed_at": {"type": "string", "format": "date-time"},
     "source_version": {"type": ["string", "null"], "maxLength": 256},

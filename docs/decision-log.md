@@ -218,3 +218,14 @@ A deep code audit identified and resolved five safety edge cases:
 4. `FreshnessMode.MAX_AGE_SECONDS` evaluated `age = clock.now - observed` and passed negative age (`observed` in the future) as `<= max_age_seconds`. Future timestamps are now rejected as `STALE_OBSERVATION`.
 5. Canonical JSON now normalizes float `-0.0` to `0.0` to eliminate content-hash divergence for mathematically equivalent floating-point zeros.
 
+## D24 — 2026-09-11 — Transport failures are explicit truth states
+
+Structured bodies returned with failed HTTP statuses are transport evidence,
+not domain evidence. A non-2xx/3xx response therefore evaluates as
+blocked/`transport_error` with reason code `TRANSPORT_ERROR`, regardless of
+error-shaped JSON such as a `not_found` code or message. `transport_error` is
+added to the typed truth-state and envelope-schema vocabularies so fixtures and
+reports can represent that outcome directly. The HTTP 404 regression fixture
+pins the boundary and prevents error-body text from being promoted to a domain
+`not_found` claim.
+

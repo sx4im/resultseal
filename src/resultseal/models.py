@@ -48,6 +48,7 @@ class TruthState(StrEnum):
     STALE = "stale"
     SOURCE_MISMATCH = "source_mismatch"
     UNVERIFIED_EFFECT = "unverified_effect"
+    TRANSPORT_ERROR = "transport_error"
     PARSE_ERROR = "parse_error"
     UNKNOWN = "unknown"
     SEALED = "sealed"

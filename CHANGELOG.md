@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- HTTP 404 structured-error fixture proving that error response bodies cannot
+  be promoted to domain `not_found` claims; transport failures block with
+  `transport_error` / `TRANSPORT_ERROR` (#18).
+
 ## [0.1.2] — 2026-09-03
 
 ### Added
