@@ -72,8 +72,27 @@ def build_node():  # type annotations would require optional dependencies
 
 
 if __name__ == "__main__":
-    node = build_node()
+    from langchain_core.messages import AIMessage
+    from langgraph.graph import END, START, MessagesState, StateGraph
+
+    builder = StateGraph(MessagesState)
+    builder.add_node("tools", build_node())
+    builder.add_edge(START, "tools")
+    builder.add_edge("tools", END)
+    graph = builder.compile()
+
+    ai_call = AIMessage(
+        content="",
+        tool_calls=[
+            {
+                "name": "search_customer",
+                "args": {"query": "customer 42"},
+                "id": "call_1",
+            }
+        ],
+    )
+
     try:
-        node.invoke({"messages": [{"role": "tool", "content": "customer 42"}]})
+        graph.invoke({"messages": [ai_call]})
     except BlockedObservation as exc:
         print(f"Successfully blocked unverified observation: {exc}")
