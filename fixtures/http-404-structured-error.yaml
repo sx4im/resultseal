@@ -21,7 +21,7 @@ input:
   target_ref: customer:42
   body: '{"code": "not_found", "message": "Customer not found"}'
 expected:
-  truth_state: transport_error
+  truth_state: unknown
   decision: blocked
   reason_codes:
-    - TRANSPORT_ERROR
+    - TRANSPORT_FAILED

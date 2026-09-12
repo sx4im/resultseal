@@ -8,7 +8,7 @@ injected ``ReferenceClock``), and cannot execute contract data.
 Precedence — the first matching row decides; later rows are skipped:
 
 1. no dispatch record            -> blocked/unknown   NO_DISPATCH
-2. transport error               -> blocked           TRANSPORT_ERROR
+2. transport error               -> blocked/unknown   TRANSPORT_FAILED
 3. parse failure                 -> blocked           PARSE_FAILED
 4. protocol self-contradiction   -> blocked/unknown   PROTOCOL_CONFLICT
 5. unusable payload, no sentinel -> blocked/empty     EMPTY_WITHOUT_NOT_FOUND_SENTINEL
@@ -81,9 +81,9 @@ def evaluate(
     if envelope.transport_state in (TransportState.ATTEMPTED, TransportState.DISPATCHED):
         return Evaluation(Decision.BLOCKED, TruthState.UNKNOWN, ("NO_DISPATCH",))
     if envelope.transport_state is TransportState.TRANSPORT_ERROR:
-        return Evaluation(
-            Decision.BLOCKED, TruthState.TRANSPORT_ERROR, ("TRANSPORT_ERROR",)
-        )
+        # Nothing was observed, so the truthful classification is unknown;
+        # the failing layer is recorded via the reason code.
+        return Evaluation(Decision.BLOCKED, TruthState.UNKNOWN, ("TRANSPORT_FAILED",))
     if envelope.truth_state is TruthState.PARSE_ERROR:
         return Evaluation(Decision.BLOCKED, TruthState.PARSE_ERROR, ("PARSE_FAILED",))
     if envelope.metadata.get("protocol_conflict") is True:
