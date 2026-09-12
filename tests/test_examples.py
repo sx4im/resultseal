@@ -118,3 +118,23 @@ def test_crewai_example_docstring_documents_installation() -> None:
     doc = (EXAMPLES / "crewai_tool_guard.py").read_text(encoding="utf-8")
     assert "Install ``crewai``" in doc
     assert "search_customer.run" in doc or "build_tool().run" in doc
+
+
+def test_langgraph_example_blocks_empty_tool_result() -> None:
+    """The framework-free LangGraph guard blocks empty results and seals valid ones."""
+    namespace = runpy.run_path(EXAMPLES / "langgraph_tool_guard.py")
+    with pytest.raises(
+        namespace["BlockedObservation"],
+        match="EMPTY_WITHOUT_NOT_FOUND_SENTINEL",
+    ):
+        namespace["guard_search_result"]([])
+
+    verified = namespace["guard_search_result"]({"customer_id": "42", "name": "Ada"})
+    assert verified == {"customer_id": "42", "name": "Ada"}
+
+
+def test_langgraph_example_docstring_documents_installation() -> None:
+    """The example documents its optional LangGraph dependencies."""
+    doc = (EXAMPLES / "langgraph_tool_guard.py").read_text(encoding="utf-8")
+    assert "Install ``langgraph`` and ``langchain-core``" in doc
+    assert "ToolNode" in doc
