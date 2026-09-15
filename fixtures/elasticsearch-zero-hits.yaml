@@ -1,0 +1,34 @@
+fixture_version: 1
+name: elasticsearch-zero-hits
+claim_type: found
+contract:
+  schema_version: "1"
+  claim_type: found
+  required_fields:
+    - document_id
+    - content
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: fixture://elasticsearch
+  target_ref: doc:report-2026
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: json
+  source_ref: fixture://elasticsearch
+  target_ref: doc:report-2026
+  tool_name: es_search
+  body:
+    took: 4
+    timed_out: false
+    hits:
+      total:
+        value: 0
+        relation: eq
+      hits: []
+expected:
+  truth_state: partial
+  decision: blocked
+  reason_codes:
+    - MISSING_REQUIRED_FIELD
