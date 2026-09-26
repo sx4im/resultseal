@@ -4,7 +4,7 @@ Adapters translate external result shapes into the common envelope. They do not 
 
 ## HTTP/JSON adapter
 
-Input fields may include status code, headers, body, request target, response target, parsed JSON, and observed timestamp. HTTP 2xx may establish `transported` but never automatically establish `complete`, `not_found`, or `sealed`.
+Input fields may include status code, headers, body, request target, response target, parsed JSON, and observed timestamp. HTTP 2xx and 3xx responses may establish `transported` but never automatically establish `complete`, `not_found`, or `sealed`.
 
 ## MCP-style adapter
 

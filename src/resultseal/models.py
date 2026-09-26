@@ -223,21 +223,31 @@ def _check_metadata(metadata: Mapping[str, JsonScalar]) -> None:
             )
 
 
-def _as_str(raw: Mapping[str, object], key: str) -> str:
+def _as_str(
+    raw: Mapping[str, object],
+    key: str,
+    *,
+    error: type[ResultSealError] = SchemaInvalidError,
+) -> str:
     value = raw.get(key)
     if value is None:
-        raise SchemaInvalidError(f"missing required field {key!r}")
+        raise error(f"missing required field {key!r}")
     if not isinstance(value, str):
-        raise SchemaInvalidError(f"field {key!r} must be a string")
+        raise error(f"field {key!r} must be a string")
     return value
 
 
-def _as_opt_str(raw: Mapping[str, object], key: str) -> str | None:
+def _as_opt_str(
+    raw: Mapping[str, object],
+    key: str,
+    *,
+    error: type[ResultSealError] = SchemaInvalidError,
+) -> str | None:
     value = raw.get(key)
     if value is None:
         return None
     if not isinstance(value, str):
-        raise SchemaInvalidError(f"field {key!r} must be a string or null")
+        raise error(f"field {key!r} must be a string or null")
     return value
 
 
@@ -445,9 +455,13 @@ class Contract:
             required_fields=tuple(fields_raw),
             freshness_mode=mode,
             max_age_seconds=max_age_raw,
-            min_source_version=_as_opt_str(raw, "min_source_version"),
-            source_ref=_as_str(raw, "source_ref"),
-            target_ref=_as_str(raw, "target_ref"),
-            not_found_sentinel=_as_opt_str(raw, "not_found_sentinel"),
+            min_source_version=_as_opt_str(
+                raw, "min_source_version", error=ContractInvalidError
+            ),
+            source_ref=_as_str(raw, "source_ref", error=ContractInvalidError),
+            target_ref=_as_str(raw, "target_ref", error=ContractInvalidError),
+            not_found_sentinel=_as_opt_str(
+                raw, "not_found_sentinel", error=ContractInvalidError
+            ),
             effect_evidence_required=effect_flag,
         )

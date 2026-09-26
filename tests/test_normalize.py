@@ -143,3 +143,21 @@ def test_claim_only_is_attempted() -> None:
     result = normalize({"kind": "claim_only", "claim": "done"}, CLOCK)
     assert result.envelope.transport_state is TransportState.ATTEMPTED
     assert result.payload is None
+
+
+def test_yaml_timestamp_in_payload_normalizes() -> None:
+    # YAML's timestamp tag is explicitly allowed by safeio, so a date inside
+    # the payload must canonicalize (ISO-8601) rather than explode hashing.
+    from resultseal.limits import Limits
+    from resultseal.safeio import load_yaml
+
+    raw = load_yaml(
+        b"kind: mcp\nsource_ref: s\ntarget_ref: t\n"
+        b"structuredContent:\n  observed_on: 2026-01-01\n  name: x\n",
+        Limits(),
+    )
+    assert isinstance(raw, dict)
+    first = normalize(raw, CLOCK)
+    second = normalize(raw, CLOCK)
+    assert first.envelope.content_hash == second.envelope.content_hash
+    assert first.envelope.content_hash.startswith("sha256:")
