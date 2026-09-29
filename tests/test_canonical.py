@@ -69,3 +69,32 @@ def test_negative_zero_canonical_hash_identity() -> None:
     hash_neg = content_hash({"val": -0.0})
     assert canonical_json({"val": -0.0}) == b'{"val":0.0}'
     assert hash_neg == hash_pos
+
+
+def test_date_renders_as_iso8601() -> None:
+    from datetime import date
+
+    assert canonical_json({"d": date(2026, 1, 1)}) == b'{"d":"2026-01-01"}'
+
+
+def test_datetime_renders_as_iso8601() -> None:
+    from datetime import datetime
+
+    naive = datetime(2026, 1, 1, 12, 30, 45)
+    assert canonical_json({"d": naive}) == b'{"d":"2026-01-01T12:30:45"}'
+
+
+def test_aware_datetime_keeps_offset() -> None:
+    from datetime import UTC, datetime
+
+    aware = datetime(2026, 1, 1, 12, 30, 45, tzinfo=UTC)
+    assert canonical_json({"d": aware}) == b'{"d":"2026-01-01T12:30:45+00:00"}'
+
+
+def test_nested_dates_hash_deterministically() -> None:
+    from datetime import date
+
+    left = {"rows": [{"observed_on": date(2026, 1, 1)}, {"observed_on": date(2026, 1, 2)}]}
+    right = {"rows": [{"observed_on": date(2026, 1, 2)}, {"observed_on": date(2026, 1, 1)}]}
+    assert content_hash(left) != content_hash(right)
+    assert content_hash(left) == content_hash(left)

@@ -112,3 +112,17 @@ def test_non_object_document_rejected(tmp_path) -> None:  # type: ignore[no-unty
     path.write_text("[1, 2]", encoding="utf-8")
     with pytest.raises(ContractInvalidError):
         load_contract_file(path, LIMITS)
+
+
+def test_wrong_typed_identity_fields_are_contract_invalid() -> None:
+    for field, bad in (
+        ("source_ref", 123),
+        ("target_ref", ["x"]),
+        ("not_found_sentinel", 4.5),
+        ("min_source_version", True),
+    ):
+        raw = minimal_contract()
+        raw[field] = bad
+        with pytest.raises(ContractInvalidError) as excinfo:
+            load_contract_data(raw, LIMITS)
+        assert excinfo.value.code == "CONTRACT_INVALID", field

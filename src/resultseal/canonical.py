@@ -2,9 +2,11 @@
 
 Canonical form: UTF-8, recursively sorted object keys, ``,``/``:`` separators,
 no insignificant whitespace, non-ASCII preserved, integers untouched, NaN/Inf
-and non-string object keys rejected. ``deterministic_fingerprint`` is defined
-over a decision record that excludes the fingerprint field itself (decision
-D6).
+and non-string object keys rejected. ``datetime.date`` / ``datetime.datetime`` /
+``datetime.time`` values (which YAML's ``timestamp`` tag may produce) render as
+ISO-8601 strings, so explicitly allowed YAML input always canonicalizes.
+``deterministic_fingerprint`` is defined over a decision record that excludes
+the fingerprint field itself (decision D6).
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
+from datetime import date, datetime, time
 
 from resultseal.errors import SchemaInvalidError
 from resultseal.models import JsonValue
@@ -50,14 +53,17 @@ def decision_fingerprint(record: Mapping[str, JsonValue]) -> str:
     return content_hash(trimmed)
 
 
-def _normalize(obj: JsonValue) -> JsonValue:
+def _normalize(obj: object) -> JsonValue:
+    # datetime is a subclass of date: check it first.
+    if isinstance(obj, (datetime, date, time)):
+        return obj.isoformat()
     if isinstance(obj, float):
         return 0.0 if obj == 0.0 else obj
     if isinstance(obj, dict):
         return {k: _normalize(v) for k, v in obj.items()}
     if isinstance(obj, list):
         return [_normalize(item) for item in obj]
-    return obj
+    return obj  # type: ignore[return-value]
 
 
 def _validate(obj: JsonValue) -> None:
