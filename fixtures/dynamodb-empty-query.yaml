@@ -1,0 +1,30 @@
+fixture_version: 1
+name: dynamodb-empty-query
+claim_type: found
+contract:
+  schema_version: "1"
+  claim_type: found
+  required_fields:
+    - customer_id
+    - name
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: aws://dynamodb/customers
+  target_ref: customer:42
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: json
+  source_ref: aws://dynamodb/customers
+  target_ref: customer:42
+  tool_name: dynamodb_query
+  body:
+    Items: []
+    Count: 0
+    ScannedCount: 0
+expected:
+  truth_state: partial
+  decision: blocked
+  reason_codes:
+    - MISSING_REQUIRED_FIELD
