@@ -8,10 +8,10 @@ fetch, and never execute returned strings.
 
 Envelope identity defaults (D11): caller-provided ids win; otherwise
 ``obs-<12hex>`` / ``call-<12hex>`` are derived from the payload content hash.
-``observed_at`` falls back to the injected clock only when absent. ``kind`` selects the
-adapter explicitly, or is inferred: mcp (structuredContent/isError/
-outputSchema) -> stdio (exit_code/stdout/stderr) -> http_json (status_code)
--> json.
+``observed_at`` falls back to the injected clock only when absent (D25).
+``kind`` selects the adapter explicitly, or is inferred: mcp
+(structuredContent/isError/outputSchema) -> stdio (exit_code/stdout/stderr)
+-> http_json (status_code) -> json.
 """
 
 from __future__ import annotations
