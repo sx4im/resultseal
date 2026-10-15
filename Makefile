@@ -16,7 +16,6 @@ build:
 	python -m build || uv build
 
 demo:
-	resultseal replay fixtures/empty-result.yaml
-	resultseal replay fixtures/explicit-not-found.yaml
+	resultseal replay fixtures/*.yaml
 
 all: test lint typecheck build

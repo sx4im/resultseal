@@ -20,7 +20,8 @@ uv pip install --python "$VENV/bin/python" --offline --no-deps dist/*.whl
 
 echo "== README commands =="
 "$VENV/bin/resultseal" version
-"$VENV/bin/resultseal" replay fixtures/empty-result.yaml
-"$VENV/bin/resultseal" replay fixtures/explicit-not-found.yaml
+"$VENV/bin/resultseal" replay fixtures/*.yaml
+"$VENV/bin/resultseal" check examples/mcp_result.json --contract examples/customer_contract.json
+"$VENV/bin/python" -c "import resultseal; resultseal.seal"
 
 echo "clean-install check: PASS"

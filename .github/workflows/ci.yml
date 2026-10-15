@@ -5,18 +5,25 @@ on:
     branches: [main, master]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      # tests/test_playground.py runs docs/playground.js against the engine.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Install
         run: python -m pip install -e ".[dev]"
       - name: Test
@@ -35,10 +42,13 @@ jobs:
           python-version: "3.12"
       - name: Build sdist and wheel
         run: |
-          python -m pip install build
+          python -m pip install build twine
           python -m build
+          python -m twine check --strict dist/*
       - name: Clean-install smoke
         run: |
-          python -m pip install dist/*.whl
-          resultseal version
-          resultseal replay fixtures/empty-result.yaml
+          python -m venv /tmp/smoke-venv
+          /tmp/smoke-venv/bin/pip install dist/*.whl
+          /tmp/smoke-venv/bin/resultseal version
+          /tmp/smoke-venv/bin/resultseal replay fixtures/*.yaml
+          /tmp/smoke-venv/bin/python -c "import resultseal; resultseal.seal"
