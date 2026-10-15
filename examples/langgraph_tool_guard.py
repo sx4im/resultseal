@@ -1,34 +1,23 @@
 """Guard a LangGraph tool result before it enters graph state.
 
 Install ``langgraph`` and ``langchain-core`` to run the complete example.
-The framework imports stay inside :func:`build_node` so the core test suite
-does not need either optional dependency installed.
+The framework imports stay inside :func:`build_node` and the ``__main__``
+block, so the guard itself runs without either dependency.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from pathlib import Path
 
-from resultseal.contracts import load_contract_file
-from resultseal.limits import Limits
-from resultseal.models import Decision
-from resultseal.normalize import normalize
-from resultseal.rules import ReferenceClock, evaluate
+import resultseal
+from resultseal import BlockedObservation
 
-CONTRACT_PATH = Path(__file__).with_name("customer_contract.json")
-
-
-class BlockedObservation(RuntimeError):
-    """Raised when ResultSeal blocks an unsafe tool observation."""
+CONTRACT = resultseal.load_contract(Path(__file__).with_name("customer_contract.json"))
 
 
 def guard_search_result(result: object) -> object:
-    """Return a verified result or block the tool observation."""
-    clock = ReferenceClock(now=datetime.now(UTC))
-    contract = load_contract_file(CONTRACT_PATH, Limits())
-
-    normalization = normalize(
+    """Return *result* only if it seals as customer 42's complete record."""
+    return resultseal.seal(
         {
             "kind": "json",
             "source_ref": "mcp://crm-server",
@@ -36,23 +25,8 @@ def guard_search_result(result: object) -> object:
             "tool_name": "search_customer",
             "body": result,
         },
-        clock,
+        CONTRACT,
     )
-
-    evaluation = evaluate(
-        normalization.envelope,
-        normalization.payload,
-        contract,
-        clock,
-    )
-
-    if evaluation.decision is not Decision.SEALED:
-        codes = ", ".join(evaluation.reason_codes)
-        raise BlockedObservation(
-            f"ResultSeal blocked the tool observation: {codes}"
-        )
-
-    return normalization.payload
 
 
 def build_node():  # type annotations would require optional dependencies
@@ -63,11 +37,13 @@ def build_node():  # type annotations would require optional dependencies
     @tool
     def search_customer(query: str) -> object:
         """Search the customer database."""
-        # Stand-in for a database call. An empty result must not silently enter
-        # graph state as if it were a verified observation.
+        # Stand-in for a database call that matched nothing. An empty result
+        # must not enter graph state as if it were a verified observation.
         database_result: list[object] = []
         return guard_search_result(database_result)
 
+    # Pass handle_tool_errors=True to hand the block to the model as an error
+    # ToolMessage instead of raising out of the graph.
     return ToolNode([search_customer])
 
 
@@ -83,16 +59,9 @@ if __name__ == "__main__":
 
     ai_call = AIMessage(
         content="",
-        tool_calls=[
-            {
-                "name": "search_customer",
-                "args": {"query": "customer 42"},
-                "id": "call_1",
-            }
-        ],
+        tool_calls=[{"name": "search_customer", "args": {"query": "customer 42"}, "id": "call_1"}],
     )
-
     try:
         graph.invoke({"messages": [ai_call]})
     except BlockedObservation as exc:
-        print(f"Successfully blocked unverified observation: {exc}")
+        print(f"Blocked before entering graph state: {exc}")

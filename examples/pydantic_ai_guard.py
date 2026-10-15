@@ -1,33 +1,23 @@
 """Guard a Pydantic-AI tool result before it can enter model context.
 
-Install ``pydantic-ai`` to run the complete example.  ``TestModel`` keeps the
+Install ``pydantic-ai`` to run the complete example. ``TestModel`` keeps the
 example deterministic and offline; replace it with a production model when
-adapting the pattern.
+adapting the pattern. The framework imports stay inside :func:`build_agent`.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from pathlib import Path
 
-from resultseal.contracts import load_contract_file
-from resultseal.limits import Limits
-from resultseal.models import Decision
-from resultseal.normalize import normalize
-from resultseal.rules import ReferenceClock, evaluate
+import resultseal
+from resultseal import BlockedObservation
 
-CONTRACT_PATH = Path(__file__).with_name("customer_contract.json")
-
-
-class BlockedObservation(RuntimeError):
-    """Raised before an unverified tool result is returned to the agent."""
+CONTRACT = resultseal.load_contract(Path(__file__).with_name("customer_contract.json"))
 
 
 def guard_customer_result(result: object) -> object:
-    """Return a verified observation, or abort the tool call with evidence."""
-    clock = ReferenceClock(now=datetime.now(UTC))
-    contract = load_contract_file(CONTRACT_PATH, Limits())
-    normalization = normalize(
+    """Return *result* only if it seals as customer 42's complete record."""
+    return resultseal.seal(
         {
             "kind": "json",
             "source_ref": "mcp://crm-server",
@@ -35,13 +25,8 @@ def guard_customer_result(result: object) -> object:
             "tool_name": "get_customer",
             "body": result,
         },
-        clock,
+        CONTRACT,
     )
-    evaluation = evaluate(normalization.envelope, normalization.payload, contract, clock)
-    if evaluation.decision is not Decision.SEALED:
-        codes = ", ".join(evaluation.reason_codes)
-        raise BlockedObservation(f"ResultSeal blocked the tool observation: {codes}")
-    return normalization.payload
 
 
 def build_agent():  # type annotations would require an optional dependency
@@ -56,9 +41,9 @@ def build_agent():  # type annotations would require an optional dependency
 
     @agent.tool_plain
     def get_customer(customer_id: str) -> object:
-        """Look up a customer in a database."""
-        # Stand-in for a database call. Raising here prevents [] from becoming
-        # a successful ToolReturnPart in the next model request.
+        """Look up a customer in the database."""
+        # Stand-in for a database call that matched nothing. Raising here
+        # keeps [] from becoming a successful ToolReturnPart.
         database_result: list[object] = []
         return guard_customer_result(database_result)
 
@@ -66,4 +51,7 @@ def build_agent():  # type annotations would require an optional dependency
 
 
 if __name__ == "__main__":
-    build_agent().run_sync("Find customer 42")
+    try:
+        build_agent().run_sync("Find customer 42")
+    except BlockedObservation as exc:
+        print(f"Blocked before reaching the model: {exc}")
