@@ -239,3 +239,25 @@ path. The fallback now applies only when the field is absent. A
 `date`/`datetime` value is rendered with `isoformat()` (aware values keep
 their offset; naive values stay naive and are refused under D18), and any
 other non-string value is `SCHEMA_INVALID`.
+
+## D26 — 2026-10-15 — Public in-process API
+
+Every framework example re-implemented the same pipeline — load contract,
+build a clock, `normalize`, `evaluate`, compare the decision, raise — and
+the README's Python snippet needed six imports from internal modules.
+`resultseal.api` (re-exported from the package root) is now the supported
+in-process entrypoint:
+
+- `check(raw, contract, *, now=None, limits=None) -> CheckResult` applies
+  the same input bounds the CLI applies to files, then the adapter and the
+  pure rules. A blocked decision is a return value, never an exception.
+- `seal(...)` returns the payload only when sealed and otherwise raises
+  `BlockedObservation`, which deliberately does not subclass
+  `ResultSealError` (that hierarchy means invalid or unsafe input).
+- `CheckResult.record()` is byte-identical to `resultseal check --format
+  json` for the same input and clock (pinned by `tests/test_api.py`).
+
+Like `cli.py`, `api.py` is an entrypoint and may read the wall clock once
+when `now` is omitted; the D10 boundary for `rules.py` is unchanged. The
+package version now has a single home, `src/resultseal/_version.py`, read
+by hatchling, and the wheel ships a `py.typed` marker.

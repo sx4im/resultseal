@@ -28,6 +28,7 @@ deterministic report and stable CLI exit code
 | `contracts.py` | Load and validate declarative contracts | Evaluate arbitrary expressions |
 | `fixtures.py` | Safe bounded fixture loading | Follow imports, URLs, or code |
 | `report.py` | Stable JSON/Markdown output | Add nondeterministic timestamps by default |
+| `api.py` | In-process entrypoint: `check`, `seal`, `load_contract` | Diverge from the CLI pipeline or raise on a blocked decision from `check` |
 | `cli.py` | User-facing commands and exit codes | Hide failures or swallow exceptions |
 
 ## Data flow invariant
