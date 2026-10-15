@@ -27,6 +27,11 @@ integration mistake: passing the payload object itself as the whole input.
 
 Adapters must be deterministic, bounded, redaction-aware, and side-effect-free. They must not execute returned strings, follow URLs, load imports, invoke shells, or send data outside the process.
 
+`observed_at` defaults to the injected reference clock only when the input
+omits it. A present value is kept: strings verbatim, unquoted YAML
+timestamps as ISO-8601, anything else is `SCHEMA_INVALID`. Substituting the
+clock for a present timestamp would make old evidence look fresh (D25).
+
 ## Body-less success protocols (effect claims)
 
 Some protocols report success with an empty body — an HTTP 204 DELETE is
