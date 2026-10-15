@@ -25,6 +25,37 @@ def test_deep_nesting_rejected() -> None:
         load_json(doc.encode(), TIGHT)
 
 
+def test_json_nesting_beyond_interpreter_stack_is_a_limit_error() -> None:
+    # Fits the default size limit but exceeds the C decoder's recursion
+    # ceiling, so the parser itself fails before walk_bounds can run.
+    doc = "[" * 60_000 + "]" * 60_000
+    with pytest.raises(LimitExceededError):
+        load_json(doc.encode(), Limits())
+
+
+@pytest.mark.parametrize(
+    "doc",
+    ["[" * 30_000 + "]" * 30_000, "".join("  " * i + "-\n" for i in range(64))],
+    ids=["flow", "block"],
+)
+def test_yaml_deep_nesting_rejected_before_composition(doc: str) -> None:
+    with pytest.raises(LimitExceededError):
+        load_yaml(doc.encode(), Limits())
+
+
+@pytest.mark.parametrize(
+    "doc", [b"a: !!int abc", b"a: !!float xyz", b"a: !!bool maybe", b"a: !!timestamp nope"]
+)
+def test_yaml_scalar_not_matching_its_tag_is_parse_failed(doc: bytes) -> None:
+    with pytest.raises(ParseFailedError):
+        load_yaml(doc, Limits())
+
+
+def test_yaml_unhashable_key_rejected_as_unsafe() -> None:
+    with pytest.raises(UnsafeInputError):
+        load_yaml(b"? [a, b]\n: 1\n", Limits())
+
+
 def test_long_string_rejected() -> None:
     with pytest.raises(LimitExceededError):
         load_json(('{"s": "' + "x" * 40 + '"}').encode(), TIGHT)
