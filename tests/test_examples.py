@@ -138,3 +138,23 @@ def test_langgraph_example_docstring_documents_installation() -> None:
     doc = (EXAMPLES / "langgraph_tool_guard.py").read_text(encoding="utf-8")
     assert "Install ``langgraph`` and ``langchain-core``" in doc
     assert "ToolNode" in doc
+
+
+def test_smolagents_example_blocks_empty_tool_result() -> None:
+    """The framework-free smolagents guard blocks empty results and seals valid ones."""
+    namespace = runpy.run_path(EXAMPLES / "smolagents_tool_guard.py")
+    with pytest.raises(
+        namespace["BlockedObservation"],
+        match="EMPTY_WITHOUT_NOT_FOUND_SENTINEL",
+    ):
+        namespace["guard_search_result"]([])
+
+    verified = namespace["guard_search_result"]({"customer_id": "42", "name": "Ada"})
+    assert verified == {"customer_id": "42", "name": "Ada"}
+
+
+def test_smolagents_example_docstring_documents_installation() -> None:
+    """The example documents its optional smolagents dependency."""
+    doc = (EXAMPLES / "smolagents_tool_guard.py").read_text(encoding="utf-8")
+    assert "Install ``smolagents``" in doc
+    assert "from smolagents import tool" in doc
