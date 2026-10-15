@@ -23,6 +23,12 @@ def test_infer_kind_unknown_explicit_rejected() -> None:
         infer_kind({"kind": "carrier_pigeon"})
 
 
+@pytest.mark.parametrize("kind", [["json"], {"a": 1}, 7, True])
+def test_infer_kind_non_string_explicit_rejected(kind: object) -> None:
+    with pytest.raises(SchemaInvalidError):
+        infer_kind({"kind": kind})  # type: ignore[dict-item]
+
+
 def test_infer_kind_structured() -> None:
     assert infer_kind({"structuredContent": {}}) == "mcp"
     assert infer_kind({"isError": False}) == "mcp"

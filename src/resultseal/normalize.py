@@ -43,11 +43,9 @@ class Normalization:
 def infer_kind(raw: Mapping[str, JsonValue]) -> str:
     explicit = raw.get("kind")
     if explicit is not None:
-        if explicit not in _KINDS:
-            raise SchemaInvalidError(
-                "unknown input kind", detail=repr(explicit)
-            )
-        return str(explicit)
+        if not isinstance(explicit, str) or explicit not in _KINDS:
+            raise SchemaInvalidError("unknown input kind", detail=repr(explicit)[:80])
+        return explicit
     if any(key in raw for key in _MCP_KEYS):
         return "mcp"
     if any(key in raw for key in _STDIO_KEYS):
