@@ -8,7 +8,7 @@ fetch, and never execute returned strings.
 
 Envelope identity defaults (D11): caller-provided ids win; otherwise
 ``obs-<12hex>`` / ``call-<12hex>`` are derived from the payload content hash.
-``observed_at`` falls back to the injected clock. ``kind`` selects the
+``observed_at`` falls back to the injected clock only when absent. ``kind`` selects the
 adapter explicitly, or is inferred: mcp (structuredContent/isError/
 outputSchema) -> stdio (exit_code/stdout/stderr) -> http_json (status_code)
 -> json.
@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import date
 from typing import cast
 
 from resultseal.canonical import content_hash
@@ -269,6 +270,23 @@ def _parse_body(body: object) -> tuple[object, bool]:
     return None, True
 
 
+def _observed_at(value: object, clock: ReferenceClock) -> str:
+    """The caller's timestamp verbatim; the injected clock only when absent.
+
+    A present-but-unusable value must never fall back to the clock: that
+    would make an old observation look fresh under ``max_age_seconds``.
+    """
+    if value is None:
+        return format_clock(clock.now)
+    if isinstance(value, str):
+        return value
+    if isinstance(value, date):
+        # Unquoted YAML timestamps load as date/datetime objects. Naive ones
+        # stay naive and are refused by max-age freshness (D18).
+        return value.isoformat()
+    raise SchemaInvalidError("observed_at must be an ISO-8601 string")
+
+
 def _envelope(
     raw: Mapping[str, JsonValue],
     clock: ReferenceClock,
@@ -340,11 +358,7 @@ def _envelope(
         transport_state=transport_state,
         truth_state=truth_state,
         source_ref=source_ref,
-        observed_at=(
-            observed_at
-            if isinstance(observed_at, str)
-            else format_clock(clock.now)
-        ),
+        observed_at=_observed_at(observed_at, clock),
         content_hash=digest,
         evidence_refs=evidence_refs,
         reason_codes=(),

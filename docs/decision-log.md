@@ -227,3 +227,15 @@ error-shaped JSON such as a `not_found` code or message. The HTTP 404 regression
 fixture (`fixtures/http-404-structured-error.yaml`) pins this boundary and prevents
 error-body text from being promoted to a domain `not_found` claim.
 
+
+## D25 — 2026-10-15 — `observed_at` falls back to the clock only when absent
+
+D11 defaults `observed_at` to the injected clock when the caller does not
+supply one. The adapter implemented this as "when not a string", so an
+unquoted YAML timestamp — which PyYAML loads as a `datetime` — was silently
+replaced by the reference clock. Under `max_age_seconds` freshness that made
+an arbitrarily old observation evaluate as fresh and seal: a fail-open
+path. The fallback now applies only when the field is absent. A
+`date`/`datetime` value is rendered with `isoformat()` (aware values keep
+their offset; naive values stay naive and are refused under D18), and any
+other non-string value is `SCHEMA_INVALID`.

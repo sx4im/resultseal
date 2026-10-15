@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 import pytest
 
 from resultseal.errors import SchemaInvalidError, UnsafeInputError
-from resultseal.models import TransportState, TruthState
+from resultseal.models import ClaimType, JsonValue, TransportState, TruthState
 from resultseal.normalize import infer_kind, normalize, prepare_payload
 from resultseal.rules import ReferenceClock
 
@@ -71,6 +71,51 @@ def test_provided_ids_and_timestamp_win() -> None:
     assert env.observation_id == "obs-mine"
     assert env.tool_call_id == "call-mine"
     assert env.observed_at == "2026-01-01T00:00:00Z"
+
+
+def _yaml_input(observed_at_line: bytes) -> dict[str, JsonValue]:
+    from resultseal.limits import Limits
+    from resultseal.safeio import load_yaml
+
+    raw = load_yaml(
+        b"kind: json\nsource_ref: s\ntarget_ref: t\nbody: {a: 1}\n" + observed_at_line,
+        Limits(),
+    )
+    assert isinstance(raw, dict)
+    return raw
+
+
+def test_unquoted_yaml_observed_at_is_kept_not_replaced_by_clock() -> None:
+    raw = _yaml_input(b"observed_at: 2020-01-01T00:00:00Z\n")
+    env = normalize(raw, CLOCK).envelope
+    assert env.observed_at == "2020-01-01T00:00:00+00:00"
+
+
+def test_unquoted_yaml_observed_at_still_fails_max_age_freshness() -> None:
+    from resultseal.models import Contract, Decision, FreshnessMode
+    from resultseal.rules import evaluate
+
+    contract = Contract(
+        claim_type=ClaimType.FOUND,
+        required_fields=("a",),
+        freshness_mode=FreshnessMode.MAX_AGE_SECONDS,
+        max_age_seconds=60,
+        min_source_version=None,
+        source_ref="s",
+        target_ref="t",
+    )
+    norm = normalize(_yaml_input(b"observed_at: 2020-01-01T00:00:00Z\n"), CLOCK)
+    evaluation = evaluate(norm.envelope, norm.payload, contract, CLOCK)
+    assert evaluation.decision is Decision.BLOCKED
+    assert evaluation.reason_codes == ("STALE_OBSERVATION",)
+
+
+def test_non_string_observed_at_rejected() -> None:
+    with pytest.raises(SchemaInvalidError):
+        normalize(
+            {"kind": "json", "source_ref": "s", "target_ref": "t", "body": {}, "observed_at": 0},
+            CLOCK,
+        )
 
 
 def test_nested_yaml_payload_loads() -> None:
