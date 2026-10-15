@@ -153,6 +153,26 @@ def test_smolagents_example_blocks_empty_tool_result() -> None:
     assert verified == {"customer_id": "42", "name": "Ada"}
 
 
+def test_autogen_example_blocks_empty_tool_result() -> None:
+    """The AutoGen tool function raises on its empty stand-in result; valid records seal."""
+    namespace = runpy.run_path(EXAMPLES / "autogen_tool_guard.py")
+    blocked = namespace["BlockedObservation"]
+    with pytest.raises(blocked, match="EMPTY_WITHOUT_NOT_FOUND_SENTINEL"):
+        namespace["search_customer"]("customer 42")
+    with pytest.raises(blocked, match="MISSING_REQUIRED_FIELD"):
+        namespace["guard_search_result"]({"customer_id": "42"})
+
+    verified = namespace["guard_search_result"]({"customer_id": "42", "name": "Ada"})
+    assert verified == {"customer_id": "42", "name": "Ada"}
+
+
+def test_autogen_example_docstring_documents_installation() -> None:
+    """The example documents its optional AutoGen dependencies."""
+    doc = (EXAMPLES / "autogen_tool_guard.py").read_text(encoding="utf-8")
+    assert "Install ``autogen-agentchat`` and ``autogen-ext``" in doc
+    assert "AssistantAgent" in doc
+
+
 def test_smolagents_example_docstring_documents_installation() -> None:
     """The example documents its optional smolagents dependency."""
     doc = (EXAMPLES / "smolagents_tool_guard.py").read_text(encoding="utf-8")
