@@ -17,5 +17,12 @@ Every evaluation produces a normalized decision record.
 }
 ```
 
+`resultseal replay --format json` prints a record like the one above for
+every evaluated fixture. A `rejected` fixture is refused before evaluation,
+so it has no decision record; it prints
+`{"decision":"rejected","fixture":"<name>","reason_codes":["<CODE>"]}`.
+
+The same record is available in-process as `resultseal.check(...).record()`.
+
 Markdown reports must be readable by a developer in a terminal. JSON reports must be machine-consumable and stable across replay. Never include raw secrets or unrestricted payloads in reports.
 
