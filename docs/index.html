@@ -223,17 +223,12 @@
       </div>
       <div class="header-links">
         <a href="https://github.com/sx4im/resultseal" target="_blank">GitHub</a>
-        <a href="https://pypi.org/project/resultseal/" target="_blank">PyPI v0.1.3</a>
+        <a href="https://pypi.org/project/resultseal/" target="_blank">PyPI</a>
       </div>
     </header>
 
-    <div class="presets">
+    <div class="presets" id="presets">
       <span>Scenarios:</span>
-      <button class="preset-btn active" onclick="loadPreset('empty_sql')">1. Empty SQL Result (Blocked)</button>
-      <button class="preset-btn" onclick="loadPreset('valid_mcp')">2. Complete MCP Result (Sealed)</button>
-      <button class="preset-btn" onclick="loadPreset('http_empty')">3. HTTP 200 Empty Body (Blocked)</button>
-      <button class="preset-btn" onclick="loadPreset('mcp_error')">4. MCP Error with Body (Blocked)</button>
-      <button class="preset-btn" onclick="loadPreset('sentinel_found')">5. Explicit Not-Found Sentinel (Sealed)</button>
     </div>
 
     <div class="grid">
@@ -262,199 +257,77 @@
     </div>
 
     <footer>
-      ResultSeal is a minimal, fail-closed Python toolkit. HTTP 200 is not an observation. Empty is not not-found.
+      This page runs a JavaScript port of the ResultSeal engine that CI checks against the Python
+      package on every shipped fixture. For real workloads, <code>pip install resultseal</code>.
     </footer>
   </div>
 
+  <script src="playground.js"></script>
   <script>
-    const PRESETS = {
-      empty_sql: {
-        raw: {
-          "kind": "json",
-          "source_ref": "fixture://database",
-          "target_ref": "users:email:alice@example.com",
-          "tool_name": "sql_query",
-          "body": []
-        },
-        contract: {
-          "schema_version": "1",
-          "claim_type": "found",
-          "required_fields": ["rows"],
-          "source_ref": "fixture://database",
-          "target_ref": "users:email:alice@example.com",
-          "not_found_sentinel": null,
-          "freshness": { "mode": "not_required" }
-        }
-      },
-      valid_mcp: {
-        raw: {
-          "kind": "mcp",
-          "source_ref": "mcp://crm-server",
-          "target_ref": "customer:42",
-          "tool_name": "get_customer",
-          "body": {
-            "customer_id": "42",
-            "name": "Ada Lovelace",
-            "status": "active"
-          }
-        },
-        contract: {
-          "schema_version": "1",
-          "claim_type": "read_complete",
-          "required_fields": ["customer_id", "name"],
-          "source_ref": "mcp://crm-server",
-          "target_ref": "customer:42",
-          "not_found_sentinel": null,
-          "freshness": { "mode": "not_required" }
-        }
-      },
-      http_empty: {
-        raw: {
-          "kind": "http_json",
-          "status_code": 200,
-          "source_ref": "https://api.crm.internal/v1",
-          "target_ref": "customer:42",
-          "body": ""
-        },
-        contract: {
-          "schema_version": "1",
-          "claim_type": "found",
-          "required_fields": ["customer_id"],
-          "source_ref": "https://api.crm.internal/v1",
-          "target_ref": "customer:42",
-          "not_found_sentinel": null,
-          "freshness": { "mode": "not_required" }
-        }
-      },
-      mcp_error: {
-        raw: {
-          "kind": "mcp",
-          "source_ref": "mcp://tools",
-          "target_ref": "user:admin",
-          "isError": true,
-          "content": [{ "type": "text", "text": "Permission denied" }]
-        },
-        contract: {
-          "schema_version": "1",
-          "claim_type": "found",
-          "source_ref": "mcp://tools",
-          "target_ref": "user:admin",
-          "freshness": { "mode": "not_required" }
-        }
-      },
-      sentinel_found: {
-        raw: {
-          "kind": "json",
-          "source_ref": "fixture://directory",
-          "target_ref": "customer:42",
-          "body": {
-            "status": "NOT_FOUND"
-          }
-        },
-        contract: {
-          "schema_version": "1",
-          "claim_type": "not_found",
-          "source_ref": "fixture://directory",
-          "target_ref": "customer:42",
-          "not_found_sentinel": "NOT_FOUND",
-          "freshness": { "mode": "not_required" }
-        }
-      }
+    const EXPLANATIONS = {
+      NO_DISPATCH: "No dispatch record: the tool was never shown to have run, so nothing it claims can be promoted.",
+      TRANSPORT_FAILED: "Transport failure: a failed status or non-zero exit is transport evidence, never a domain answer such as not-found.",
+      PARSE_FAILED: "Parse failure: the payload could not be parsed, so there is no observation to evaluate.",
+      PROTOCOL_CONFLICT: "Protocol conflict: the tool reported an error (isError: true), so its content cannot be promoted as an answer.",
+      EMPTY_WITHOUT_NOT_FOUND_SENTINEL: "Empty is not not-found: without the contract's explicit not-found sentinel, an empty result proves nothing about existence.",
+      SOURCE_MISMATCH: "Identity mismatch: the observation's source or target is not the one the contract is about.",
+      TARGET_MISMATCH: "Identity mismatch: the observation's source or target is not the one the contract is about.",
+      STALE_OBSERVATION: "Stale observation: the evidence is older than the contract's freshness requirement.",
+      SCHEMA_INVALID: "Unusable timestamp: max-age freshness needs an offset-aware ISO-8601 observed_at.",
+      MISSING_REQUIRED_FIELD: "Partial observation: the payload is missing fields the contract requires.",
+      UNVERIFIED_EFFECT: "Unverified effect: an effect claim needs evidence_refs proving the effect happened.",
+      SEALED_WITH_REQUIRED_EVIDENCE: "Sealed: every contract condition holds, so this observation may support the claim.",
     };
 
-    function loadPreset(key) {
-      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      const p = PRESETS[key];
-      document.getElementById('rawInput').value = JSON.stringify(p.raw, null, 2);
-      document.getElementById('contractInput').value = JSON.stringify(p.contract, null, 2);
-      evaluateContract();
+    function showVerdict(kind, title, description, details) {
+      const box = document.getElementById("verdictBox");
+      box.className = "verdict-box " + kind;
+      document.getElementById("verdictTitle").textContent = title;
+      document.getElementById("verdictDesc").textContent = description;
+      document.getElementById("verdictDetails").textContent = details;
     }
 
     function evaluateContract() {
-      const box = document.getElementById('verdictBox');
-      const title = document.getElementById('verdictTitle');
-      const desc = document.getElementById('verdictDesc');
-      const details = document.getElementById('verdictDetails');
-
-      box.className = "verdict-box";
-
+      let raw, contract;
       try {
-        const raw = JSON.parse(document.getElementById('rawInput').value);
-        const contract = JSON.parse(document.getElementById('contractInput').value);
-
-        // Core ResultSeal logic emulation (R8.1)
-        if (raw.isError === true) {
-          box.classList.add('blocked');
-          title.innerHTML = "⛔ BLOCKED";
-          desc.innerText = "Protocol Conflict: Tool returned isError=true. Error payload cannot be promoted as an observation.";
-          details.innerText = "truth_state: unknown | reason_codes: [PROTOCOL_CONFLICT]";
-          return;
-        }
-
-        const body = raw.body !== undefined ? raw.body : raw.content;
-        const isEmpty = body === "" || body === null || body === undefined ||
-                        (Array.isArray(body) && body.length === 0) ||
-                        (typeof body === 'object' && Object.keys(body).length === 0);
-
-        const sentinel = contract.not_found_sentinel;
-        const sentinelMatched = sentinel && (
-          body === sentinel ||
-          (typeof body === 'object' && body !== null && Object.values(body).includes(sentinel))
-        );
-
-        if (isEmpty && !sentinelMatched) {
-          box.classList.add('blocked');
-          title.innerHTML = "⛔ BLOCKED";
-          desc.innerText = "Empty observation: Tool returned empty/null payload without an approved not-found sentinel. ResultSeal prevents hallucinating 'entity does not exist'.";
-          details.innerText = "truth_state: empty | reason_codes: [EMPTY_WITHOUT_NOT_FOUND_SENTINEL]";
-          return;
-        }
-
-        if (contract.claim_type === "not_found" && !sentinelMatched) {
-          box.classList.add('blocked');
-          title.innerHTML = "⛔ BLOCKED";
-          desc.innerText = "Not-Found Claim Missing Sentinel: Contract required not_found claim, but payload does not carry sentinel '" + sentinel + "'.";
-          details.innerText = "truth_state: observed | reason_codes: [EMPTY_WITHOUT_NOT_FOUND_SENTINEL]";
-          return;
-        }
-
-        if (raw.source_ref !== contract.source_ref || raw.target_ref !== contract.target_ref) {
-          box.classList.add('blocked');
-          title.innerHTML = "⛔ BLOCKED";
-          desc.innerText = "Identity Mismatch: Observation source_ref or target_ref contradicts contract identity.";
-          details.innerText = "truth_state: source_mismatch | reason_codes: [SOURCE_MISMATCH, TARGET_MISMATCH]";
-          return;
-        }
-
-        if (contract.required_fields && Array.isArray(contract.required_fields)) {
-          const missing = contract.required_fields.filter(f => !body || body[f] === undefined);
-          if (missing.length > 0) {
-            box.classList.add('blocked');
-            title.innerHTML = "⛔ BLOCKED";
-            desc.innerText = "Missing Required Fields: Payload is missing fields [" + missing.join(", ") + "].";
-            details.innerText = "truth_state: partial | reason_codes: [MISSING_REQUIRED_FIELD]";
-            return;
-          }
-        }
-
-        // All invariants satisfied
-        box.classList.add('sealed');
-        title.innerHTML = "✅ SEALED";
-        const truth = contract.claim_type === "not_found" ? "not_found" : "sealed";
-        desc.innerText = "Observation Integrity Verified: Safe for downstream model promotion.";
-        details.innerText = "truth_state: " + truth + " | reason_codes: [SEALED_WITH_REQUIRED_EVIDENCE]";
-
+        raw = JSON.parse(document.getElementById("rawInput").value);
+        contract = JSON.parse(document.getElementById("contractInput").value);
       } catch (err) {
-        box.classList.add('blocked');
-        title.innerHTML = "⚠️ PARSE ERROR";
-        desc.innerText = "Invalid JSON in input or contract: " + err.message;
-        details.innerText = "truth_state: parse_error | reason_codes: [PARSE_FAILED]";
+        showVerdict("blocked", "INVALID JSON", "The editor content is not valid JSON: " + err.message, "resultseal check would exit 2 (PARSE_FAILED)");
+        return;
       }
+      const result = evaluateObservation(raw, contract);
+      if (result.error) {
+        showVerdict("blocked", "REJECTED", result.message, "resultseal check would exit 2 (" + result.error + ")");
+        return;
+      }
+      const sealed = result.decision === "sealed";
+      showVerdict(
+        sealed ? "sealed" : "blocked",
+        sealed ? "SEALED" : "BLOCKED",
+        EXPLANATIONS[result.reason_codes[0]] || "",
+        "truth_state: " + result.truth_state + " | reason_codes: [" + result.reason_codes.join(", ") + "]"
+      );
     }
 
-    // Initialize default preset on load
-    loadPreset('empty_sql');
+    function loadPreset(key, button) {
+      document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
+      button.classList.add("active");
+      const preset = PRESETS[key];
+      document.getElementById("rawInput").value = JSON.stringify(preset.raw, null, 2);
+      document.getElementById("contractInput").value = JSON.stringify(preset.contract, null, 2);
+      evaluateContract();
+    }
+
+    const presetBar = document.getElementById("presets");
+    Object.entries(PRESETS).forEach(([key, preset], index) => {
+      const button = document.createElement("button");
+      button.className = "preset-btn";
+      button.textContent = (index + 1) + ". " + preset.label + " (" + (preset.expect === "sealed" ? "Sealed" : "Blocked") + ")";
+      button.addEventListener("click", () => loadPreset(key, button));
+      presetBar.appendChild(button);
+    });
+    loadPreset("empty_sql", presetBar.querySelector(".preset-btn"));
   </script>
 </body>
 </html>
