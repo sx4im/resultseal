@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.2.0] — 2026-10-15
+
+### Added
+
+- Public Python API at the package root: `resultseal.check()` returns a
+  `CheckResult` (decision, truth state, reason codes, envelope, payload);
+  `resultseal.seal()` returns the verified payload or raises
+  `BlockedObservation`; `resultseal.load_contract()` accepts a path or a
+  mapping. `CheckResult.record()` is byte-identical to
+  `resultseal check --format json` (D26).
+- Framework examples for smolagents (#19) and AutoGen (#13), both run end to
+  end against the real frameworks.
+- Fixtures for a DynamoDB empty `Query` (#24) and Elasticsearch zero hits
+  (#23, PR #25).
+- The wheel ships a `py.typed` marker.
+- Python 3.14 support.
+
+### Fixed
+
+- **Stale observations could seal.** An unquoted YAML `observed_at` loads as
+  a `datetime`; the adapter discarded it and substituted the reference
+  clock, so arbitrarily old evidence passed `max_age_seconds` freshness. The
+  clock is now used only when `observed_at` is absent (D25).
+- `resultseal replay` reported a correctly rejected fixture as a failure
+  (exit 3) and stopped, so `resultseal replay fixtures/*.yaml` never reached
+  the fixtures after `unsafe-input.yaml`. Rejections that match their
+  expected codes now print `MATCH` and the run continues (D27).
+- Inputs that crashed with a traceback instead of a stable error code:
+  construct-time YAML errors (`AttributeError` from a misnamed exception
+  class), tagged scalars that do not parse under their tag (`!!int abc`),
+  JSON nesting deep enough to exhaust the decoder's recursion limit, and a
+  non-string `kind`.
+- Deeply nested flow YAML took ~28 s to reject because PyYAML's scanner is
+  quadratic in nesting depth; the depth bound is now enforced while
+  scanning, before parsing, and fails in milliseconds.
+- YAML timestamps inside payloads crashed content hashing; they now
+  canonicalize as ISO-8601 (PR #26).
+- Malformed contract field types now consistently raise `CONTRACT_INVALID`
+  (PR #26).
+- The GitHub Pages playground disagreed with the engine: its "Complete MCP
+  result" preset would be blocked by ResultSeal, and one preset contract was
+  invalid. The playground now runs a port of the engine that CI checks
+  against the package on every fixture and preset.
+
+### Changed
+
+- Framework examples delegate to `resultseal.seal` and load their contract
+  once, instead of re-implementing the pipeline per call.
+- The package version is single-sourced in `src/resultseal/_version.py`.
+- Development status is now Beta.
+- README rewritten around the public API; its Python examples are executed
+  by the test suite. The fixture catalog now lists every shipped fixture.
+
 ## [0.1.3] — 2026-09-12
 
 ### Added
