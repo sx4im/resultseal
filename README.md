@@ -12,7 +12,7 @@
   <a href="https://github.com/sx4im/resultseal/actions/workflows/ci.yml"><img src="https://github.com/sx4im/resultseal/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://pypi.org/project/resultseal/"><img src="https://img.shields.io/pypi/v/resultseal.svg" alt="PyPI" /></a>
   <a href="https://pypi.org/project/resultseal/"><img src="https://img.shields.io/pypi/pyversions/resultseal.svg" alt="Python versions" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-yellow.svg" alt="MIT license" /></a>
+  <a href="https://github.com/sx4im/resultseal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-yellow.svg" alt="MIT license" /></a>
   <a href="https://sx4im.github.io/resultseal/"><img src="https://img.shields.io/badge/playground-live-blue.svg" alt="Live playground" /></a>
 </p>
 
@@ -186,13 +186,13 @@ was also run end to end against current releases of its framework.
 
 | Framework | Example | Hook point |
 |---|---|---|
-| LangChain | [`langchain_tool_guard.py`](examples/langchain_tool_guard.py) | `@tool` |
-| LangGraph | [`langgraph_tool_guard.py`](examples/langgraph_tool_guard.py) | `ToolNode` inside a `StateGraph` |
-| LlamaIndex | [`llamaindex_tool_guard.py`](examples/llamaindex_tool_guard.py) | `FunctionTool` |
-| CrewAI | [`crewai_tool_guard.py`](examples/crewai_tool_guard.py) | `crewai.tools.tool` |
-| Pydantic-AI | [`pydantic_ai_guard.py`](examples/pydantic_ai_guard.py) | `@agent.tool_plain`, run offline with `TestModel` |
-| smolagents | [`smolagents_tool_guard.py`](examples/smolagents_tool_guard.py) | `@tool` |
-| AutoGen | [`autogen_tool_guard.py`](examples/autogen_tool_guard.py) | `AssistantAgent` tools, run offline with `ReplayChatCompletionClient` |
+| LangChain | [`langchain_tool_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/langchain_tool_guard.py) | `@tool` |
+| LangGraph | [`langgraph_tool_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/langgraph_tool_guard.py) | `ToolNode` inside a `StateGraph` |
+| LlamaIndex | [`llamaindex_tool_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/llamaindex_tool_guard.py) | `FunctionTool` |
+| CrewAI | [`crewai_tool_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/crewai_tool_guard.py) | `crewai.tools.tool` |
+| Pydantic-AI | [`pydantic_ai_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/pydantic_ai_guard.py) | `@agent.tool_plain`, run offline with `TestModel` |
+| smolagents | [`smolagents_tool_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/smolagents_tool_guard.py) | `@tool` |
+| AutoGen | [`autogen_tool_guard.py`](https://github.com/sx4im/resultseal/blob/master/examples/autogen_tool_guard.py) | `AssistantAgent` tools, run offline with `ReplayChatCompletionClient` |
 
 All of them follow the same pattern:
 
@@ -266,17 +266,17 @@ environment.
 Malformed or unsafe input is never evaluated. It raises a `ResultSealError`
 whose code is one of `SCHEMA_INVALID`, `PARSE_FAILED`, `CONTRACT_INVALID`,
 `INVALID_ARGUMENT`, `UNSAFE_INPUT` or `LIMIT_EXCEEDED`. The full precedence
-rules are in [PROMOTION_RULES.md](docs/specs/PROMOTION_RULES.md).
+rules are in [PROMOTION_RULES.md](https://github.com/sx4im/resultseal/blob/master/docs/specs/PROMOTION_RULES.md).
 
 ## Fixtures from real backends
 
-[`fixtures/`](fixtures/) holds 19 self-contained cases. Each one includes the
+[`fixtures/`](https://github.com/sx4im/resultseal/tree/master/fixtures/) holds 19 self-contained cases. Each one includes the
 input, the contract and the expected outcome. Every CI run replays all of
 them. They cover the core semantics and the response shapes that real
 backends produce when nothing matched: SQL empty result sets, Redis `nil`,
 Elasticsearch zero hits, DynamoDB `Items: []`, GraphQL `data: null` with
 errors, and structured HTTP 404 bodies. The
-[fixture catalog](docs/specs/FIXTURE_CATALOG.md) lists each case and why it
+[fixture catalog](https://github.com/sx4im/resultseal/blob/master/docs/specs/FIXTURE_CATALOG.md) lists each case and why it
 seals or blocks.
 
 ## Guarantees and limits
@@ -292,25 +292,25 @@ seals or blocks.
   test scans the source to enforce this.
 - **Scope.** ResultSeal protects the local promotion decision. It does not
   prove that a remote system is honest, judge the quality of a model's prose,
-  or replace authorization. See [THREAT_MODEL.md](docs/specs/THREAT_MODEL.md)
-  and [NON_GOALS.md](docs/specs/NON_GOALS.md).
+  or replace authorization. See [THREAT_MODEL.md](https://github.com/sx4im/resultseal/blob/master/docs/specs/THREAT_MODEL.md)
+  and [NON_GOALS.md](https://github.com/sx4im/resultseal/blob/master/docs/specs/NON_GOALS.md).
 
 ResultSeal is not an agent framework, proxy, dashboard, policy engine, retry
 layer or LLM judge. It is one function you call at the tool boundary.
 
 ## Documentation
 
-- [Architecture](docs/specs/ARCHITECTURE.md): modules and data flow
-- [Adapters](docs/specs/ADAPTERS.md): what each adapter may and may not conclude
-- [Promotion rules](docs/specs/PROMOTION_RULES.md) and [error codes](docs/specs/ERROR_CODES.md)
-- [CLI contract](docs/specs/CLI_CONTRACT.md) and [report format](docs/specs/REPORT_FORMAT.md)
-- [Decision log](docs/decision-log.md): every semantic decision, with dates and reasons
-- [Changelog](CHANGELOG.md)
+- [Architecture](https://github.com/sx4im/resultseal/blob/master/docs/specs/ARCHITECTURE.md): modules and data flow
+- [Adapters](https://github.com/sx4im/resultseal/blob/master/docs/specs/ADAPTERS.md): what each adapter may and may not conclude
+- [Promotion rules](https://github.com/sx4im/resultseal/blob/master/docs/specs/PROMOTION_RULES.md) and [error codes](https://github.com/sx4im/resultseal/blob/master/docs/specs/ERROR_CODES.md)
+- [CLI contract](https://github.com/sx4im/resultseal/blob/master/docs/specs/CLI_CONTRACT.md) and [report format](https://github.com/sx4im/resultseal/blob/master/docs/specs/REPORT_FORMAT.md)
+- [Decision log](https://github.com/sx4im/resultseal/blob/master/docs/decision-log.md): every semantic decision, with dates and reasons
+- [Changelog](https://github.com/sx4im/resultseal/blob/master/CHANGELOG.md)
 
 ## Contributing
 
 New fixtures from real backends, framework examples and adapter work are all
-welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers setup and the project's
+welcome. [CONTRIBUTING.md](https://github.com/sx4im/resultseal/blob/master/CONTRIBUTING.md) covers setup and the project's
 fail-closed principles.
 
 ```bash
@@ -327,4 +327,4 @@ make all       # tests, ruff, mypy --strict, build
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/sx4im/resultseal/blob/master/LICENSE)
