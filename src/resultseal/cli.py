@@ -31,7 +31,7 @@ from resultseal.errors import (
     ResultSealError,
     SchemaInvalidError,
 )
-from resultseal.fixtures import expectation_matches, load_fixture_file
+from resultseal.fixtures import FixtureBundle, expectation_matches, load_fixture_file
 from resultseal.limits import Limits
 from resultseal.models import Contract, Decision, JsonValue
 from resultseal.normalize import Normalization, infer_kind, normalize
@@ -254,14 +254,7 @@ def _replay_one(
                 "fixture has no embedded contract and cannot be replayed",
                 detail=path_text,
             )
-        # Rejected-expectation fixture: input preparation itself must refuse
-        # (e.g. a nested YAML payload carrying an unsafe tag). Reaching this
-        # point means it did not.
-        normalize(dict(bundle.raw_input), clock)
-        raise SchemaInvalidError(
-            "fixture expected rejection but its input prepared cleanly",
-            detail=path_text,
-        )
+        return _replay_rejection(bundle, path_text, fmt, clock)
     raw = dict(bundle.raw_input)
     normalization, evaluation = _normalize_and_evaluate(raw, contract, clock)
 
@@ -290,6 +283,41 @@ def _replay_one(
                 f" codes={list(evaluation.reason_codes)}"
             )
     return matched
+
+
+def _replay_rejection(
+    bundle: FixtureBundle, path_text: str, fmt: str, clock: ReferenceClock
+) -> bool:
+    """A ``rejected`` fixture matches when input preparation refuses it.
+
+    The refusal (e.g. a nested YAML payload carrying an unsafe tag) is the
+    expected outcome, so it is reported like any other result instead of
+    aborting the run. Expected reason codes match the raised code or any
+    code it specializes (``LIMIT_EXCEEDED`` satisfies ``UNSAFE_INPUT``).
+    """
+    try:
+        normalize(dict(bundle.raw_input), clock)
+    except ResultSealError as exc:
+        lineage = {
+            cls.code for cls in type(exc).__mro__ if issubclass(cls, ResultSealError)
+        }
+        matched = all(code in lineage for code in bundle.expected.reason_codes)
+        if fmt == "json":
+            print(
+                render_json(
+                    {"decision": "rejected", "fixture": bundle.name, "reason_codes": [exc.code]}
+                )
+            )
+        else:
+            verdict = "MATCH" if matched else "MISMATCH"
+            print(f"{_color_verdict(verdict)}: {bundle.name} -> rejected ({exc.code})")
+            if not matched:
+                print(f"  expected codes={list(bundle.expected.reason_codes)}")
+                print(f"  actual:   {exc}")
+        return matched
+    raise SchemaInvalidError(
+        "fixture expected rejection but its input prepared cleanly", detail=path_text
+    )
 
 
 def _run_replay(args: argparse.Namespace) -> int:

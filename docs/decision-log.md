@@ -261,3 +261,16 @@ Like `cli.py`, `api.py` is an entrypoint and may read the wall clock once
 when `now` is omitted; the D10 boundary for `rules.py` is unchanged. The
 package version now has a single home, `src/resultseal/_version.py`, read
 by hatchling, and the wheel ships a `py.typed` marker.
+
+## D27 — 2026-10-15 — Rejection fixtures replay as MATCH
+
+`decision: rejected` fixtures assert that input preparation refuses the
+input. When it did, `resultseal replay` let the error escape, printing it on
+stderr and exiting 3 — so the expected outcome was reported as a failure,
+and `resultseal replay fixtures/*.yaml` stopped at `unsafe-input.yaml`
+without replaying the fixtures after it. A refusal whose code covers the
+expected reason codes (directly or through the error hierarchy) is now a
+MATCH and the run continues; a refusal with the wrong code is a MISMATCH
+(exit 1). Exit 3 keeps its CLI_CONTRACT meaning for fixture documents that
+are themselves unsafe. JSON output for a rejection is
+`{"decision","fixture","reason_codes"}`, as there is no decision record.

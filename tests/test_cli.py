@@ -205,8 +205,41 @@ def test_replay_matches_expectations(name: str, expected_code: int) -> None:
     assert main(["replay", str(FIXTURES / name), CLOCK]) == expected_code
 
 
-def test_replay_unsafe_fixture_exits_three() -> None:
-    assert main(["replay", str(FIXTURES / "unsafe-input.yaml"), CLOCK]) == 3
+def test_replay_rejection_fixture_matches_when_refused(capsys) -> None:  # type: ignore[no-untyped-def]
+    assert main(["replay", str(FIXTURES / "unsafe-input.yaml"), CLOCK]) == 0
+    assert "MATCH: unsafe-input -> rejected (UNSAFE_INPUT)" in capsys.readouterr().out
+
+
+def test_replay_every_shipped_fixture_in_one_run(capsys) -> None:  # type: ignore[no-untyped-def]
+    fixtures = sorted(FIXTURES.glob("*.yaml"))
+    assert main(["replay", *map(str, fixtures), CLOCK]) == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert len(lines) == len(fixtures)
+    assert all(line.startswith("MATCH: ") for line in lines)
+
+
+def test_replay_rejection_with_wrong_code_is_a_mismatch(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]
+    raw = (FIXTURES / "unsafe-input.yaml").read_text(encoding="utf-8").replace(
+        "- UNSAFE_INPUT", "- PARSE_FAILED"
+    )
+    assert main(["replay", str(write(tmp_path, "wrong-code.yaml", raw)), CLOCK]) == 1
+    assert "MISMATCH" in capsys.readouterr().out
+
+
+def test_replay_rejection_json_names_the_code(capsys) -> None:  # type: ignore[no-untyped-def]
+    args = ["replay", str(FIXTURES / "unsafe-input.yaml"), CLOCK, "--format", "json"]
+    assert main(args) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "decision": "rejected",
+        "fixture": "unsafe-input",
+        "reason_codes": ["UNSAFE_INPUT"],
+    }
+
+
+def test_replay_unsafe_fixture_document_exits_three(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    raw = (FIXTURES / "empty-result.yaml").read_text(encoding="utf-8")
+    path = write(tmp_path, "aliased.yaml", raw.replace("name: empty-result", "name: &n x"))
+    assert main(["replay", str(path), CLOCK]) == 3
 
 
 def test_replay_mismatch_exits_one(tmp_path, capsys) -> None:  # type: ignore[no-untyped-def]

@@ -4,7 +4,7 @@ Every evaluation produces a normalized decision record.
 
 ```json
 {
-  "resultseal_version": "0.1.0",
+  "resultseal_version": "0.2.0",
   "decision": "blocked",
   "truth_state": "empty",
   "claim_type": "not_found",

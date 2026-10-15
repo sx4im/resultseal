@@ -7,7 +7,12 @@ The executable is `resultseal`.
 | `resultseal version` | Print package version | 0 |
 | `resultseal validate PATH` | Validate contracts or fixtures | 0 valid, 2 invalid input, 3 unsafe input |
 | `resultseal check RESPONSE --contract CONTRACT` | Normalize and evaluate one response | 0 sealed, 1 blocked/unknown, 2 invalid invocation, 3 unsafe input |
-| `resultseal replay FIXTURE` | Run a deterministic fixture and print report | 0 if expected outcome matches, 1 mismatch, 2 invalid fixture, 3 unsafe input |
+| `resultseal replay FIXTURE [FIXTURE ...]` | Run deterministic fixtures and print one result each | 0 if every expected outcome matches, 1 any mismatch, 2 invalid fixture, 3 unsafe fixture document |
+
+A fixture whose expectation is `decision: rejected` matches when preparing
+its input raises an error whose code (or a code it specializes) covers the
+expected `reason_codes`; it is reported as `MATCH: <name> -> rejected (<CODE>)`
+and the run continues.
 
 ## Output
 
