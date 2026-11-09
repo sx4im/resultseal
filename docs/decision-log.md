@@ -343,3 +343,12 @@ configured conversion limit. The loader now maps decoder ValueError to
 PARSE_FAILED, as it already did syntax and encoding errors. No global integer
 limit is changed in production. Nested parse failures still block through the
 existing parse_error rule; invalid outer documents retain CLI exit 2.
+
+## D33 — 2026-11-09 — Prepare the promotion-boundary fixes as patch release 0.2.1
+
+The fixes merged in PR #28 are on master and in the live playground, but pip
+users still receive 0.2.0. Prepare 0.2.1 by updating the single version constant
+and dating the existing unreleased changelog. This release adds no new API,
+contract schema, exit code or dependency; it corrects promotion and parsing
+behavior already promised by the package. Publication requires separate user
+approval because pushing the release tag triggers the PyPI/GitHub release job.
