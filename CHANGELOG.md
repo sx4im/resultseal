@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.2.1] — 2026-11-09
 
 ### Fixed
 
@@ -19,6 +19,8 @@
 
 ### Changed
 
+- Development checks use the selected Python interpreter; build failures
+  propagate without falling back to a different build tool.
 - README describes validation scope and installation context more precisely.
 - Pages adds search and social metadata; community guidance includes a
   discovery plan and removes unsuitable listing and launch advice.
