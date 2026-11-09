@@ -5,7 +5,7 @@
 <h1 align="center">ResultSeal</h1>
 
 <p align="center">
-  <b>HTTP 200 is not an observation. Empty is not not-found. A tool call is not an effect.</b>
+  Validate AI-agent tool results before they become factual claims.
 </p>
 
 <p align="center">
@@ -16,39 +16,43 @@
   <a href="https://sx4im.github.io/resultseal/"><img src="https://img.shields.io/badge/playground-live-blue.svg" alt="Live playground" /></a>
 </p>
 
+ResultSeal is a Python library and CLI for validating AI-agent tool results
+against explicit contracts. It handles JSON, HTTP responses, MCP tool results,
+and stdio output without calling a model or making network requests.
+
 An agent asks a CRM tool for customer 42. The search returns `[]`, and the
-agent tells the user the customer does not exist. Nothing failed: the HTTP
-status was 200, the JSON was valid, the schema check passed. The empty list
-simply got promoted into a fact it never supported.
+agent tells the user the customer does not exist. The HTTP status was 200,
+and a schema that permits lists accepts the response. Neither establishes
+that the lookup was complete enough to prove absence.
 
 ResultSeal sits between your tools and your model. You declare, per tool,
 what a result has to contain before it may back a claim. ResultSeal checks
-each raw result against that contract and either **seals** it or **blocks**
+each raw result against that contract and either seals it or blocks
 it with a stable reason code. Empty, partial, stale, mismatched, errored and
 unverified results are blocked by default.
 
-- **Framework-neutral.** Plain Python and a CLI. There are drop-in examples
+- **Framework-neutral.** Plain Python and a CLI. There are examples
   for LangChain, LangGraph, LlamaIndex, CrewAI, Pydantic-AI, smolagents and
   AutoGen.
 - **Deterministic.** The same input and reference clock always produce the
   same decision and the same SHA-256 fingerprint. No model calls and no
   network.
-- **Small and strict.** One runtime dependency (PyYAML). Inputs are bounded,
-  YAML tags and anchors are refused, and contracts are data only.
+- **Bounded input.** One runtime dependency (PyYAML). Custom YAML tags,
+  anchors and aliases are refused, and contracts are data only.
 
 ## What it catches
 
 | The tool returns | A naive agent concludes | ResultSeal |
 |---|---|---|
 | `[]` or `{}` from a search | "That record does not exist." | blocked: `EMPTY_WITHOUT_NOT_FOUND_SENTINEL` |
-| `{"status": "NOT_FOUND"}`, and the contract names `NOT_FOUND` as its sentinel | "That record does not exist." This time it is right. | sealed: `not_found` |
+| `{"status": "NOT_FOUND"}`, and the contract names `NOT_FOUND` as its sentinel | Absence is explicit and satisfies the contract | sealed: `not_found` |
 | HTTP 404 with `{"error": "not_found"}` | "Confirmed absent." | blocked: `TRANSPORT_FAILED` |
 | HTTP 204 with an empty body after a `DELETE` | "Deleted." | blocked: `EMPTY_WITHOUT_NOT_FOUND_SENTINEL` |
 | MCP result with `isError: true` and some text | Reads the error text as the answer | blocked: `PROTOCOL_CONFLICT` |
 | A cached record at `revision-9` when the contract needs `revision-12` | Acts on stale state | blocked: `STALE_OBSERVATION` |
 | `{"customer_id": "42"}` when `name` is required | Fills the gap | blocked: `MISSING_REQUIRED_FIELD` |
 | A record for `customer:7` when you asked for `customer:42` | Answers about the wrong customer | blocked: `TARGET_MISMATCH` |
-| "Email sent" with no message id | "Done." | blocked: `UNVERIFIED_EFFECT` |
+| A non-empty effect result without `evidence_refs`, when the contract requires them | "Done." | blocked: `UNVERIFIED_EFFECT` |
 
 Several of these cases are presets in the [playground](https://sx4im.github.io/resultseal/).
 
@@ -143,7 +147,8 @@ resultseal.check(observe([]), not_found).sealed                       # -> False
 
 ### Check from the command line
 
-The CLI evaluates JSON or YAML files and uses exit codes, so it fits into CI:
+The following commands use files from a repository checkout. The CLI evaluates
+JSON or YAML files and uses exit codes, so it fits into CI:
 
 ```bash
 # A complete MCP result seals (exit 0)
@@ -180,9 +185,9 @@ before they are fingerprinted.
 
 ## Framework integrations
 
-Each example is a single self-contained file. The guard runs without the
-framework installed, so the test suite covers every example. Each example
-was also run end to end against current releases of its framework.
+Each example is a single file. The test suite checks its guard without the
+framework installed. To run the framework integration itself, install the
+optional packages named in the example's docstring.
 
 | Framework | Example | Hook point |
 |---|---|---|
@@ -227,7 +232,7 @@ that are present.
 |---|---|---|
 | `json` | `body` (structured value, or a JSON string) | Only `body` is the payload. Other top-level fields are metadata. |
 | `http_json` | `status_code`, `body` | 2xx/3xx means transported. Any other status is `TRANSPORT_FAILED`, whatever the body says. |
-| `mcp` | `structuredContent`, `text`, `isError`, `outputSchema` | `isError: true` is a `PROTOCOL_CONFLICT`. `structuredContent` takes precedence over `text`. |
+| `mcp` | `structuredContent`, `text`, `isError`, `outputSchema` | `isError: true` is a `PROTOCOL_CONFLICT`. Missing top-level `outputSchema.required` fields block. `structuredContent` takes precedence over `text`. |
 | `stdio` | `exit_code`, `stdout`, `output_format: json` | A non-zero exit is `TRANSPORT_FAILED`. A zero exit proves only that the process completed. |
 | `yaml` | `value` (YAML text) | Parsed under the same safe loader as files. |
 | `claim_only` | `claim` | A claim with no dispatch record. It is always `NO_DISPATCH`. |
@@ -295,8 +300,12 @@ seals or blocks.
   or replace authorization. See [THREAT_MODEL.md](https://github.com/sx4im/resultseal/blob/master/docs/specs/THREAT_MODEL.md)
   and [NON_GOALS.md](https://github.com/sx4im/resultseal/blob/master/docs/specs/NON_GOALS.md).
 
-ResultSeal is not an agent framework, proxy, dashboard, policy engine, retry
-layer or LLM judge. It is one function you call at the tool boundary.
+Use schema validation to check field types and nested structure; ResultSeal
+checks the observation requirements declared in the contract. The MCP adapter
+checks top-level `required` fields, not the full JSON Schema vocabulary.
+Source, target and evidence references come from your integration code; wire
+them to the real tool response. A seal means the declared checks passed, not
+that a model's eventual answer is correct.
 
 ## Documentation
 

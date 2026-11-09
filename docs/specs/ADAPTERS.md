@@ -8,7 +8,13 @@ Input fields may include status code, headers, body, request target, response ta
 
 ## MCP-style adapter
 
-Recognize `structuredContent`, text content, `outputSchema`, and `isError`. Validate structure where a schema exists. Preserve the distinction between a structural result and a semantic result. An empty structured object is not automatically not-found. An `isError` conflict must produce a reason code and safe blocking state.
+Recognize `structuredContent`, text content, `outputSchema`, and `isError`.
+Check top-level fields listed in `outputSchema.required`; missing fields block
+at the completeness step as `partial` / `MISSING_REQUIRED_FIELD`, even if the
+contract's own `required_fields` list is empty. This adapter does not implement
+full JSON Schema validation (types, nested schemas or constraints). Preserve the
+distinction between structure and meaning. An empty structured object is not
+automatically not-found. An `isError` conflict produces a safe blocking state.
 
 ## Stdio/CLI adapter
 
@@ -31,6 +37,13 @@ Adapters must be deterministic, bounded, redaction-aware, and side-effect-free. 
 omits it. A present value is kept: strings verbatim, unquoted YAML
 timestamps as ISO-8601, anything else is `SCHEMA_INVALID`. Substituting the
 clock for a present timestamp would make old evidence look fresh (D25).
+An explicit null is invalid; it does not count as an omitted timestamp.
+
+Nested JSON strings in `body` or JSON-formatted `stdout` use the safe JSON
+loader under default limits, as nested YAML already does. Bounds for the outer
+document can be customized through the Python API; nested document bounds
+remain the package defaults. NaN/Infinity constants are invalid JSON, and
+non-finite parsed numbers are rejected before evaluation.
 
 ## Body-less success protocols (effect claims)
 

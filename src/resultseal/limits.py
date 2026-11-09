@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import isfinite
 
-from resultseal.errors import LimitExceededError
+from resultseal.errors import LimitExceededError, SchemaInvalidError
 from resultseal.models import JsonValue
 
 
@@ -48,6 +49,8 @@ def _walk(obj: JsonValue, depth: int, budget: _Budget) -> None:
         raise LimitExceededError(
             f"document exceeds {budget.limits.max_nodes} nodes"
         )
+    if isinstance(obj, float) and not isfinite(obj):
+        raise SchemaInvalidError("numbers must be finite")
     if isinstance(obj, str):
         if len(obj) > budget.limits.max_string_chars:
             raise LimitExceededError(

@@ -27,6 +27,33 @@ const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v)
 const isInt = (v) => typeof v === "number" && Number.isInteger(v);
 const has = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
+// Mirror limits.walk_bounds for outer inputs and parsed JSON bodies.
+function walkBounds(value) {
+  let nodes = 0;
+  function walk(item, depth) {
+    if (depth > 32 || ++nodes > 4096) {
+      throw new InputError("LIMIT_EXCEEDED", "document exceeds depth or node limits");
+    }
+    if (typeof item === "number" && !Number.isFinite(item)) {
+      throw new InputError("SCHEMA_INVALID", "numbers must be finite");
+    }
+    if (typeof item === "string" && Array.from(item).length > 16384) {
+      throw new InputError("LIMIT_EXCEEDED", "string exceeds character limit");
+    }
+    if (Array.isArray(item)) {
+      item.forEach((child) => walk(child, depth + 1));
+    } else if (isObject(item)) {
+      for (const [key, child] of Object.entries(item)) {
+        if (++nodes > 4096 || Array.from(key).length > 16384) {
+          throw new InputError("LIMIT_EXCEEDED", "object exceeds node or key limits");
+        }
+        walk(child, depth + 1);
+      }
+    }
+  }
+  walk(value, 1);
+}
+
 function loadContract(raw) {
   const invalid = (message) => new InputError("CONTRACT_INVALID", message);
   if (!isObject(raw)) throw invalid("contract must be an object");
@@ -108,11 +135,14 @@ function inferKind(raw) {
 function parseBody(body) {
   if (body === undefined || body === null || body === "") return [null, false];
   if (typeof body === "string") {
+    let parsed;
     try {
-      return [JSON.parse(body), false];
+      parsed = JSON.parse(body);
     } catch (_) {
       return [null, true];
     }
+    walkBounds(parsed);
+    return [parsed, false];
   }
   if (typeof body === "object" || typeof body === "number" || typeof body === "boolean") return [body, false];
   return [null, true];
@@ -151,6 +181,12 @@ function normalize(raw, nowIso) {
     const structured = raw.structuredContent ?? null;
     payload = structured !== null ? structured : typeof raw.text === "string" ? raw.text : null;
     if (raw.isError === true) extra.protocol_conflict = true;
+    const required = raw.outputSchema?.required;
+    if (Array.isArray(required)) {
+      const missing = required.filter((name) => typeof name === "string" &&
+        (!isObject(structured) || !has(structured, name)));
+      if (missing.length) extra.missing_schema_fields = missing.join(",");
+    }
   } else if (kind === "stdio") {
     if (!isInt(raw.exit_code)) throw new InputError("SCHEMA_INVALID", "exit_code must be an integer");
     const stdout = raw.stdout;
@@ -192,8 +228,8 @@ function normalize(raw, nowIso) {
   if (sourceVersion !== null && (typeof sourceVersion !== "string" || !sourceVersion)) {
     throw new InputError("SCHEMA_INVALID", "source_version must be a non-empty string or null");
   }
-  const observedAt = raw.observed_at ?? null;
-  if (observedAt !== null && (typeof observedAt !== "string" || !observedAt)) {
+  const observedAt = has(raw, "observed_at") ? raw.observed_at : nowIso;
+  if (typeof observedAt !== "string" || !observedAt) {
     throw new InputError("SCHEMA_INVALID", "observed_at must be an ISO-8601 string");
   }
   const metadata = {};
@@ -211,7 +247,7 @@ function normalize(raw, nowIso) {
     target_ref: targetRef,
     evidence_refs: evidence,
     source_version: sourceVersion,
-    observed_at: observedAt ?? nowIso,
+    observed_at: observedAt,
     metadata,
   };
   return { envelope, payload };
@@ -286,7 +322,8 @@ function evaluate(envelope, payload, contract, nowMs) {
     if (age < 0 || age > contract.max_age_seconds) return blocked("stale", "STALE_OBSERVATION");
   }
 
-  if (contract.required_fields.some((name) => !isObject(payload) || !has(payload, name))) {
+  if (envelope.metadata.missing_schema_fields ||
+      contract.required_fields.some((name) => !isObject(payload) || !has(payload, name))) {
     return blocked("partial", "MISSING_REQUIRED_FIELD");
   }
   if (
@@ -304,6 +341,8 @@ function evaluate(envelope, payload, contract, nowMs) {
 // for input the CLI would reject with exit code 2.
 function evaluateObservation(raw, rawContract, now = new Date()) {
   try {
+    walkBounds(raw);
+    walkBounds(rawContract);
     const contract = loadContract(rawContract);
     const nowIso = now.toISOString().replace(/\.\d{3}Z$/, "Z");
     const { envelope, payload } = normalize(raw, nowIso);

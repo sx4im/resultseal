@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Nested JSON strings in JSON/HTTP bodies and stdio output now enforce depth
+  and node limits, including decoder recursion errors. Non-finite numbers
+  cannot seal through nested JSON parsing (D28).
+- MCP results missing top-level `outputSchema.required` fields now block as
+  partial, including non-object structured content (D28).
+- Explicit null timestamps are rejected instead of replaced with the current
+  clock, and contracts loaded from mappings respect input limits (D28).
+- The browser playground follows these checks with parity regression cases.
+- Source archives exclude local agent configurations and instructions.
+
+### Changed
+
+- README describes validation scope and installation context more precisely.
+- Pages adds search and social metadata; community guidance includes a
+  discovery plan and removes unsuitable listing and launch advice.
+
 ## [0.2.0] — 2026-10-15
 
 ### Added

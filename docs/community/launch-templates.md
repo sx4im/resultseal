@@ -1,86 +1,85 @@
-# Community Launch & Listing Templates
+# Sharing ResultSeal
 
-This document provides ready-to-use launch templates, submission blurbs, and ecosystem PR entries to promote ResultSeal across developer communities.
+Use a runnable example and describe the checks it performs. A seal means the
+contract passed; it cannot establish that a remote source or model is honest.
+The [discovery plan](discovery-plan.md) tracks audiences, rollout and measurement.
+These drafts have not been posted.
 
----
+## X or Mastodon draft
 
-## 1. Hacker News (Show HN)
-
-**Title:**
-> Show HN: ResultSeal – Fail-closed observation contracts for AI-agent tool results
-
-**URL / Text:**
+> An empty tool result can become a confident answer in an agent loop.
+>
+> ResultSeal checks tool output against a contract before returning it to the
+> model. Empty results block; explicit absence needs an approved sentinel.
+>
+> Python, offline, JSON/HTTP/MCP/stdio.
 > https://github.com/sx4im/resultseal
 
-**First Comment / Intro:**
-> Hi HN,
->
-> Tool-calling agents keep turning non-answers into facts:
-> - A search returns `[]` and the agent says the customer does not exist.
-> - An HTTP `DELETE` returns 204 with no body and the agent reports it deleted the record, without any evidence that it did.
-> - An MCP server returns `isError: true` with some text and the agent reads the error text as the answer.
->
-> Schema validation passes in all three cases, because `[]` and an empty body are valid.
->
-> ResultSeal is a small Python library (one dependency, no network access) that you call at the tool boundary. You declare what a result must contain to support a claim. It returns the payload or refuses with a stable reason code:
->
-> ```python
-> contract = resultseal.load_contract("customer_contract.json")
-> resultseal.seal({"kind": "json", "source_ref": "crm://customers",
->                  "target_ref": "customer:42", "body": rows}, contract)
-> # BlockedObservation: observation blocked as empty: EMPTY_WITHOUT_NOT_FOUND_SENTINEL
-> ```
->
-> Decisions are deterministic and fingerprinted, so they replay in CI. It ships with fixtures taken from real backends (SQL, Redis, Elasticsearch, DynamoDB, GraphQL, HTTP 404) and with tested examples for LangChain, LangGraph, LlamaIndex, CrewAI, Pydantic-AI, smolagents and AutoGen.
->
-> Playground: https://sx4im.github.io/resultseal/
-> Repo: https://github.com/sx4im/resultseal
->
-> I'd like to hear how you handle this in production agent pipelines, and what failure shapes you have seen that a fixture should cover.
+Attach a short recording of the playground: empty SQL result, complete MCP
+result, then the same result with a required field removed. Keep the actual
+reason codes visible. Add captions so the example works without audio.
 
----
+## LinkedIn draft
 
-## 2. Reddit (`r/LocalLLaMA`, `r/Python`, `r/MachineLearning`)
-
-**Title:**
-> HTTP 200 is not an observation: ResultSeal enforces tool observation integrity for AI agents
-
-**Body:**
-> If you have built AI agents with tool calling (LangChain, LangGraph, LlamaIndex, CrewAI, Pydantic-AI, smolagents, AutoGen, or raw MCP), you've likely seen this failure mode:
+> A CRM lookup returns []. An agent can turn that empty result into a claim
+> that the customer does not exist, even when the lookup was incomplete.
 >
-> An agent calls a search tool. The tool returns an empty list `[]`. The agent confidently concludes that the item does not exist or fabricates missing fields. Standard Pydantic schema validation passes because `[]` is valid JSON, but the semantic claim is unverified.
+> ResultSeal makes that decision explicit. The Python library checks required
+> fields, source and target identity, freshness, absence sentinels and effect
+> evidence against a per-tool contract. `seal()` returns the payload when those
+> checks pass and raises `BlockedObservation` otherwise.
 >
-> We open-sourced **ResultSeal**: https://github.com/sx4im/resultseal
+> It runs locally without model calls. The repository includes examples for
+> LangChain, LangGraph, LlamaIndex, CrewAI, Pydantic-AI, smolagents and AutoGen.
 >
-> **What it does:**
-> It normalizes tool responses (JSON, HTTP, MCP, stdio), checks them against declarative contracts (required fields, not-found sentinels, freshness, target identity, effect evidence), and returns a deterministic sealed or blocked decision with a stable reason code (e.g. `EMPTY_WITHOUT_NOT_FOUND_SENTINEL`, `UNVERIFIED_EFFECT`). In Python, `resultseal.seal(result, contract)` either returns the payload or raises.
+> Try the playground: https://sx4im.github.io/resultseal/
+> Code: https://github.com/sx4im/resultseal
 >
-> - **Install:** `pip install resultseal` (Python 3.11+)
-> - **Playground:** https://sx4im.github.io/resultseal/
-> - **Open Issues for Contributors:** https://github.com/sx4im/resultseal/issues
->
-> Feedback, edge-case fixtures, and PRs welcome!
+> Which tool response has caused an incorrect conclusion in your workflow?
 
----
+Replace the opening with a real incident if you have one you can share. Avoid
+claiming deployment experience or measured improvements without evidence.
 
-## 3. Pull Request for Awesome MCP (Model Context Protocol)
+## Hacker News preparation
 
-**Target Repository:** `punkpeye/awesome-mcp-servers` or `appcypher/awesome-mcp-servers`  
-**Section:** *Frameworks & Developer Tools* / *Testing & Security*
+Write the submission and comments yourself. HN's current guidelines prohibit
+generated or AI-edited text and automated posting. The previous ready-to-paste
+HN intro has been removed.
 
-**Markdown Entry:**
+Facts to check before deciding whether to submit:
+
+- The playground works without an account, and installation works in a clean venv.
+- You can explain the difference between shape validation and a promotion contract.
+- You can demonstrate a blocked observation and name what a seal does not prove.
+- You can be present to discuss the implementation and its limitations.
+- Search for earlier submissions. A routine version bump does not qualify as
+  a new Show HN; follow the rules on substantial changes and reposting.
+
+Sources: [Show HN](https://news.ycombinator.com/showhn.html),
+[HN guidelines](https://news.ycombinator.com/newsguidelines.html).
+
+## Reddit and framework communities
+
+Choose one community where people discuss tool-result handling. Read its current
+rules, flair requirements and pinned showcase thread before posting; a general
+Python audience and a local-model audience have different interests. Disclose
+that you maintain the project. Show the failing response, the contract, the
+blocked result and a limitation. Ask for a response shape to turn into a fixture.
+
+Use the relevant framework example as the starting point. Answer technical
+questions in the thread. Avoid copying one announcement across unrelated groups.
+
+## Directory entry
+
+Use only when a directory accepts libraries or developer tools and its rules
+permit the submission. Check the category and contribution rules first.
+
 ```markdown
-- [ResultSeal](https://github.com/sx4im/resultseal) - Deterministic observation-integrity contracts for MCP tool results. Prevents empty, partial, or error-carrying MCP responses from being promoted into factual agent claims.
+- [ResultSeal](https://github.com/sx4im/resultseal) - Python contracts that check JSON, HTTP, MCP and stdio tool results before they support agent claims. Includes guards for empty, partial, stale and unverified observations.
 ```
 
----
-
-## 4. Pull Request for Awesome AI Agents
-
-**Target Repository:** `e2b-dev/awesome-ai-agents` or `Significant-Gravitas/Awesome-AI-Agents`  
-**Section:** *Guardrails & Reliability*
-
-**Markdown Entry:**
-```markdown
-- [ResultSeal](https://github.com/sx4im/resultseal) - Lightweight, deterministic observation-integrity gate that fails-closed on empty, unverified, or source-mismatched tool results in agent loops.
-```
+ResultSeal is a library, so server-only MCP lists are a poor fit. In particular,
+[Awesome MCP Servers' contribution rules](https://github.com/punkpeye/awesome-mcp-servers/blob/main/CONTRIBUTING.md)
+limit the list to installable servers. A LangChain tools list is a candidate
+because the repository contains a LangChain example; inclusion still depends on
+that list's scope and maintainer review.

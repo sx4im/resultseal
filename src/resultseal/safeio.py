@@ -33,13 +33,17 @@ def load_json(data: bytes, limits: Limits) -> JsonValue:
     check_size(len(data), limits)
     try:
         # json.loads returns Any by contract; walk_bounds validates shape.
-        doc = cast(JsonValue, json.loads(data))
+        doc = cast(JsonValue, json.loads(data, parse_constant=_reject_json_constant))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ParseFailedError("input is not valid JSON", detail=str(exc)[:120]) from exc
     except RecursionError as exc:
         raise LimitExceededError(f"nesting exceeds {limits.max_depth} levels") from exc
     walk_bounds(doc, limits)
     return doc
+
+
+def _reject_json_constant(value: str) -> None:
+    raise ParseFailedError("non-finite constants are not valid JSON", detail=value)
 
 
 def load_yaml(data: bytes, limits: Limits) -> JsonValue:

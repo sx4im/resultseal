@@ -3,7 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ResultSeal Interactive Playground — Deterministic AI Tool Contracts</title>
+  <title>ResultSeal: Python validation for AI tool results | Playground</title>
+  <meta name="description" content="Validate AI-agent tool results with ResultSeal. Try contracts that block empty, partial, stale or unverified JSON, HTTP and MCP observations.">
+  <link rel="canonical" href="https://sx4im.github.io/resultseal/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ResultSeal">
+  <meta property="og:title" content="ResultSeal: Validate AI tool results">
+  <meta property="og:description" content="Python contracts for JSON, HTTP, MCP and stdio tool results. Try sealed and blocked observations in the playground.">
+  <meta property="og:url" content="https://sx4im.github.io/resultseal/">
+  <meta property="og:image" content="https://sx4im.github.io/resultseal/logo.png">
+  <meta property="og:image:alt" content="ResultSeal logo">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ResultSeal: Validate AI tool results">
+  <meta name="twitter:description" content="Check empty, partial, stale and unverified tool results against explicit contracts. Try the playground.">
+  <meta name="twitter:image" content="https://sx4im.github.io/resultseal/logo.png">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="alternate icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="logo.png">
@@ -150,7 +163,7 @@
       margin-bottom: 28px;
     }
     .btn-run {
-      background: var(--green);
+      background: #238636;
       color: #fff;
       font-size: 16px;
       font-weight: 600;
@@ -158,7 +171,6 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
       transition: opacity 0.2s;
     }
     .btn-run:hover {
@@ -219,13 +231,21 @@
           <img src="logo.png" width="40" height="40" alt="ResultSeal Logo" style="vertical-align: middle;" />
           ResultSeal Playground
         </h1>
-        <div class="tagline">Deterministic observation-integrity gate for AI agent tool results.</div>
+        <p class="tagline">Python contracts for AI-agent tool results: block empty, partial, stale or unverified observations.</p>
       </div>
       <div class="header-links">
         <a href="https://github.com/sx4im/resultseal" target="_blank">GitHub</a>
         <a href="https://pypi.org/project/resultseal/" target="_blank">PyPI</a>
       </div>
     </header>
+
+    <p style="margin-bottom: 24px;">
+      ResultSeal checks JSON, HTTP, MCP and stdio results before they reach your model.
+      Select a scenario, edit its input or contract, then evaluate it to see the decision
+      and reason code. Run <code>pip install resultseal</code> for the Python library and CLI,
+      or read the <a href="https://github.com/sx4im/resultseal#quickstart" style="color: var(--accent);">quickstart</a>.
+      The playground evaluates JSON locally in your browser; nested YAML needs the Python package.
+    </p>
 
     <div class="presets" id="presets">
       <span>Scenarios:</span>
@@ -236,13 +256,13 @@
         <div class="card-header">
           <span>Raw Tool Observation (JSON)</span>
         </div>
-        <textarea id="rawInput"></textarea>
+        <textarea id="rawInput" aria-label="Raw tool observation as JSON"></textarea>
       </div>
       <div class="card">
         <div class="card-header">
           <span>Observation Contract (JSON)</span>
         </div>
-        <textarea id="contractInput"></textarea>
+        <textarea id="contractInput" aria-label="Observation contract as JSON"></textarea>
       </div>
     </div>
 
@@ -250,15 +270,15 @@
       <button class="btn-run" onclick="evaluateContract()">Evaluate Observation Contract</button>
     </div>
 
-    <div id="verdictBox" class="verdict-box">
+    <div id="verdictBox" class="verdict-box" role="status" aria-live="polite">
       <div id="verdictTitle" class="verdict-title"></div>
       <div id="verdictDesc" class="verdict-desc"></div>
       <div id="verdictDetails" class="verdict-details"></div>
     </div>
 
     <footer>
-      This page runs a JavaScript port of the ResultSeal engine that CI checks against the Python
-      package on every shipped fixture. For real workloads, <code>pip install resultseal</code>.
+      This page runs a JavaScript port checked against Python on JSON-compatible fixtures
+      and every preset. Python also handles YAML and generates fingerprinted decision records.
     </footer>
   </div>
 
@@ -298,7 +318,8 @@
       }
       const result = evaluateObservation(raw, contract);
       if (result.error) {
-        showVerdict("blocked", "REJECTED", result.message, "resultseal check would exit 2 (" + result.error + ")");
+        const exitCode = result.error === "LIMIT_EXCEEDED" ? 3 : 2;
+        showVerdict("blocked", "REJECTED", result.message, "resultseal check would exit " + exitCode + " (" + result.error + ")");
         return;
       }
       const sealed = result.decision === "sealed";

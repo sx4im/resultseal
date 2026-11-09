@@ -127,7 +127,7 @@ def evaluate(
         for name in contract.required_fields
         if not isinstance(payload, dict) or name not in payload
     ]
-    if missing:
+    if missing or envelope.metadata.get("missing_schema_fields"):
         return Evaluation(Decision.BLOCKED, TruthState.PARTIAL, ("MISSING_REQUIRED_FIELD",))
 
     if (
