@@ -39,9 +39,15 @@ examples rather than repeating them in every paragraph.
 - Use an accurate About description and relevant topics. Remove `mcp-server`:
   ResultSeal consumes MCP-style results but does not run an MCP server. Add
   framework topics only when the repository includes that framework's example.
-- Add a Pages description, canonical URL, Open Graph and summary-card metadata.
-  Keep the existing logo as the preview until a readable landscape image is
-  prepared; the summary card is appropriate for the square logo.
+- Add a Pages description, canonical URL, Open Graph and large-card metadata.
+  The 1280×640 preview uses the existing logo and accurate dependency information;
+  its source is `assets/social-preview.svg`, exported as `docs/social-preview.png`.
+  The SVG references `assets/logo.png`; keep that file available when exporting
+  an updated PNG from the SVG.
+  Changing the website metadata does not change GitHub's uploaded repository
+  preview. Set that separately under repository Settings → Social preview → Edit
+  using the same PNG. [GitHub's preview guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview)
+  recommends 1280×640 for best display and a file smaller than 1 MB.
 - Put a plain explanation and quickstart link in static HTML so the page is
   useful before the playground JavaScript runs.
 - Keep packaging links absolute so the same README works on PyPI.

@@ -364,3 +364,14 @@ the Unicode/numeric error smoke checks. Downloaded wheel/sdist hashes match
 PyPI's metadata; package source files and README match the tagged source, and
 local agent files are absent from the source archive. No social posts were
 made, and no search-ranking improvement is claimed from this release.
+
+## D35 — 2026-11-09 — Correct dependency claims in share previews
+
+The SVG preview source and GitHub's currently uploaded preview both claimed
+zero dependencies, contradicting the declared PyYAML runtime dependency. The
+source now says one dependency, uses concrete tool-result validation copy and
+reuses the same PNG logo as README/Pages instead of duplicating an older mark.
+Export a 1280×640 PNG and point Pages Open Graph/large-card metadata at it, with
+explicit dimensions and alt text. The existing uploaded GitHub preview is a
+separate repository setting; updating Pages metadata does not replace it.
+The discovery guide records that setup step and GitHub's image requirements.

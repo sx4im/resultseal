@@ -1,137 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" fill="none" role="img" aria-labelledby="preview-title preview-description">
+  <title id="preview-title">ResultSeal: Validate tool results before making claims</title>
+  <desc id="preview-description">Python contracts for JSON, HTTP, MCP and stdio. Fail-closed checks, Python 3.11 or newer, one runtime dependency: PyYAML.</desc>
   <defs>
-    <!-- Background Grid Gradient -->
     <radialGradient id="bgGlow" cx="65%" cy="50%" r="55%">
       <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.16" />
       <stop offset="45%" stop-color="#4FACFE" stop-opacity="0.06" />
       <stop offset="100%" stop-color="#090D16" stop-opacity="0" />
     </radialGradient>
-
-    <!-- Upper Clasp Gradient -->
-    <linearGradient id="spUpperClasp" x1="20%" y1="10%" x2="85%" y2="75%">
-      <stop offset="0%" stop-color="#00F5A0" />
-      <stop offset="50%" stop-color="#00D9F5" />
-      <stop offset="100%" stop-color="#007CF0" />
-    </linearGradient>
-
-    <!-- Lower Clasp Gradient -->
-    <linearGradient id="spLowerClasp" x1="80%" y1="90%" x2="15%" y2="25%">
-      <stop offset="0%" stop-color="#007CF0" />
-      <stop offset="50%" stop-color="#00DFD8" />
-      <stop offset="100%" stop-color="#00F5A0" />
-    </linearGradient>
-
-    <!-- Inner Core Gradient -->
-    <linearGradient id="spCoreGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="100%" stop-color="#79FFE1" />
-    </linearGradient>
-
-    <!-- Soft Drop Shadow -->
-    <filter id="spShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="16" stdDeviation="28" flood-color="#000000" flood-opacity="0.65" />
-    </filter>
-
-    <!-- Linear Gradient for Title -->
     <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#FFFFFF" />
       <stop offset="100%" stop-color="#E2E8F0" />
     </linearGradient>
-
     <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#00F5A0" />
       <stop offset="50%" stop-color="#00D9F5" />
       <stop offset="100%" stop-color="#4FACFE" />
     </linearGradient>
-
-    <!-- Grid Pattern -->
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E293B" stroke-width="0.75" stroke-opacity="0.4" />
+      <path d="M 40 0 L 0 0 0 40" stroke="#1E293B" stroke-width="0.75" stroke-opacity="0.4" />
     </pattern>
   </defs>
-
-  <!-- Deep Technical Background -->
   <rect width="1280" height="640" fill="#090D16" />
   <rect width="1280" height="640" fill="url(#grid)" />
   <rect width="1280" height="640" fill="url(#bgGlow)" />
-
-  <!-- Left: Content Typography -->
   <g transform="translate(100, 160)">
-    <!-- Pill Badge -->
-    <rect x="0" y="0" width="190" height="34" rx="17" fill="#0E1E2E" stroke="#00D9F5" stroke-opacity="0.4" stroke-width="1.5" />
+    <rect width="210" height="34" rx="17" fill="#0E1E2E" stroke="#00D9F5" stroke-opacity="0.4" stroke-width="1.5" />
     <circle cx="16" cy="17" r="5" fill="#00F5A0" />
-    <text x="28" y="22" fill="#00F5A0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" letter-spacing="1">OBSERVATION GATE</text>
-
-    <!-- Main Title -->
-    <text x="0" y="96" fill="url(#textGradient)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="800" letter-spacing="-1.5">ResultSeal</text>
-
-    <!-- High Impact Thesis -->
-    <text x="0" y="146" fill="url(#accentGradient)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" letter-spacing="0">HTTP 200 is not an observation. Empty is not not-found.</text>
-
-    <!-- Description -->
-    <text x="0" y="196" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="400">Deterministic observation-integrity contracts for AI-agent tool results.</text>
-    <text x="0" y="224" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="400">Guarding MCP, LangChain, Pydantic-AI, CrewAI, and HTTP tool calls.</text>
-
-    <!-- Feature Tags -->
-    <g transform="translate(0, 276)">
-      <rect x="0" y="0" width="148" height="34" rx="8" fill="#131B2E" stroke="#334155" stroke-width="1" />
-      <text x="14" y="22" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600">🛡️ Fail-Closed Core</text>
-
-      <rect x="160" y="0" width="168" height="34" rx="8" fill="#131B2E" stroke="#334155" stroke-width="1" />
-      <text x="14" y="22" transform="translate(160, 0)" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600">⚡ Python 3.11+ / PyPI</text>
-
-      <rect x="340" y="0" width="162" height="34" rx="8" fill="#131B2E" stroke="#334155" stroke-width="1" />
-      <text x="14" y="22" transform="translate(340, 0)" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600">🔒 Zero Dependencies</text>
+    <text x="28" y="22" fill="#00F5A0" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1">TOOL RESULT CHECKS</text>
+    <text y="106" fill="url(#textGradient)" font-family="Arial, sans-serif" font-size="80" font-weight="800" letter-spacing="-1.5">ResultSeal</text>
+    <text y="146" fill="url(#accentGradient)" font-family="Arial, sans-serif" font-size="28" font-weight="600">Validate tool results before making claims.</text>
+    <text y="196" fill="#94A3B8" font-family="Arial, sans-serif" font-size="18">Python contracts for JSON, HTTP, MCP and stdio.</text>
+    <text y="224" fill="#94A3B8" font-family="Arial, sans-serif" font-size="18">Block empty, partial, stale and unverified observations.</text>
+    <g transform="translate(0, 276)" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">
+      <rect width="148" height="34" rx="8" fill="#131B2E" stroke="#334155" />
+      <text x="14" y="22">Fail-closed checks</text>
+      <rect x="160" width="168" height="34" rx="8" fill="#131B2E" stroke="#334155" />
+      <text x="174" y="22">Python 3.11+</text>
+      <rect x="340" width="162" height="34" rx="8" fill="#131B2E" stroke="#334155" />
+      <text x="354" y="22">One dependency</text>
     </g>
+    <text y="360" fill="#94A3B8" font-family="Arial, sans-serif" font-size="18">github.com/sx4im/resultseal</text>
   </g>
-
-  <!-- Right: Hero Vector Interlocking Seal Identity -->
-  <g transform="translate(860, 320) scale(2.2)" filter="url(#spShadow)">
-    <g transform="translate(-80, -80)">
-      <!-- Outer Clasp 1: Upper Right -->
-      <path d="M 80 20
-               C 107 20, 129 37, 137 61
-               C 139.5 68.5, 136 75.5, 128.5 77
-               C 121 78.5, 114 74, 111.5 67
-               C 106 51, 94 41, 80 41
-               C 68 41, 57 48, 52 59
-               L 37 52
-               C 45 33, 61 20, 80 20 Z"
-            fill="url(#spUpperClasp)" />
-
-      <!-- Outer Clasp 2: Lower Left -->
-      <path d="M 80 140
-               C 53 140, 31 123, 23 99
-               C 20.5 91.5, 24 84.5, 31.5 83
-               C 39 81.5, 46 86, 48.5 93
-               C 54 109, 66 119, 80 119
-               C 92 119, 103 112, 108 101
-               L 123 108
-               C 115 127, 99 140, 80 140 Z"
-            fill="url(#spLowerClasp)" />
-
-      <!-- Inner Stepped Band 1 -->
-      <path d="M 51 62
-               C 53 50, 65 42, 78 44
-               L 86 61
-               C 75 61, 64 67, 59 75
-               Z"
-            fill="#00F5A0" />
-
-      <!-- Inner Stepped Band 2 -->
-      <path d="M 109 98
-               C 107 110, 95 118, 82 116
-               L 74 99
-               C 85 99, 96 93, 101 85
-               Z"
-            fill="#007CF0" />
-
-      <!-- Precision Sealed Core: Diamond Aperture -->
-      <polygon points="80,61 96,80 80,99 64,80"
-               fill="url(#spCoreGlow)" />
-
-      <!-- Central Sensor Core -->
-      <circle cx="80" cy="80" r="3.5" fill="#007CF0" />
-    </g>
-  </g>
+  <!-- Keep the preview's mark in sync with the logo used by README and Pages. -->
+  <image href="logo.png" x="650" y="20" width="600" height="600" />
 </svg>
