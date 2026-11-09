@@ -352,3 +352,15 @@ and dating the existing unreleased changelog. This release adds no new API,
 contract schema, exit code or dependency; it corrects promotion and parsing
 behavior already promised by the package. Publication requires separate user
 approval because pushing the release tag triggers the PyPI/GitHub release job.
+
+## D34 — 2026-11-09 — Publish and verify 0.2.1 with explicit approval
+
+The user approved merging PR #29 and publishing 0.2.1. Tag `v0.2.1` points at
+`67384ab`; the existing Publish workflow passed its Python 3.11–3.14 gates,
+built and checked the distributions, then published to PyPI and GitHub.
+A fresh Python 3.14 environment installed `resultseal==0.2.1` from public PyPI,
+confirmed runtime/distribution versions, replayed all 19 fixtures and passed
+the Unicode/numeric error smoke checks. Downloaded wheel/sdist hashes match
+PyPI's metadata; package source files and README match the tagged source, and
+local agent files are absent from the source archive. No social posts were
+made, and no search-ranking improvement is claimed from this release.
