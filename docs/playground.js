@@ -30,6 +30,15 @@ const has = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 // Mirror limits.walk_bounds for outer inputs and parsed JSON bodies.
 function walkBounds(value) {
   let nodes = 0;
+  function checkString(text) {
+    if (Array.from(text).length > 16384) {
+      throw new InputError("LIMIT_EXCEEDED", "string exceeds character limit");
+    }
+    // Unicode mode treats a valid surrogate pair as one code point outside this range.
+    if (/[\uD800-\uDFFF]/u.test(text)) {
+      throw new InputError("SCHEMA_INVALID", "strings must be valid UTF-8");
+    }
+  }
   function walk(item, depth) {
     if (depth > 32 || ++nodes > 4096) {
       throw new InputError("LIMIT_EXCEEDED", "document exceeds depth or node limits");
@@ -37,16 +46,15 @@ function walkBounds(value) {
     if (typeof item === "number" && !Number.isFinite(item)) {
       throw new InputError("SCHEMA_INVALID", "numbers must be finite");
     }
-    if (typeof item === "string" && Array.from(item).length > 16384) {
-      throw new InputError("LIMIT_EXCEEDED", "string exceeds character limit");
-    }
+    if (typeof item === "string") checkString(item);
     if (Array.isArray(item)) {
       item.forEach((child) => walk(child, depth + 1));
     } else if (isObject(item)) {
       for (const [key, child] of Object.entries(item)) {
-        if (++nodes > 4096 || Array.from(key).length > 16384) {
-          throw new InputError("LIMIT_EXCEEDED", "object exceeds node or key limits");
+        if (++nodes > 4096) {
+          throw new InputError("LIMIT_EXCEEDED", "object exceeds node limit");
         }
+        checkString(key);
         walk(child, depth + 1);
       }
     }

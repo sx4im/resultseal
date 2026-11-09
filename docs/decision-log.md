@@ -326,3 +326,20 @@ ignore rules. Add an explicit sdist exclusion for those paths and `.ignore`.
 This keeps local agent configuration out of published source archives without
 changing the maintainer's files or relying on global ignore configuration.
 The wheel remains limited to `src/resultseal`.
+
+## D32 — 2026-11-09 — Refuse unencodable Unicode and classify decoder failures
+
+JSON accepts escaped lone surrogates into Python strings, but ResultSeal's
+canonical format requires UTF-8. Structured payloads containing those strings
+raised an unclassified UnicodeEncodeError; nested JSON strings could seal with
+an unencodable payload because only the original JSON text was hashed. The
+bounds walk now checks string values and string keys for UTF-8 encodability,
+refusing lone surrogates as SCHEMA_INVALID. Valid supplementary Unicode remains
+valid. Canonical serialization also catches errors from its UTF-8 encoding step.
+The browser uses the equivalent Unicode code-point check.
+
+Python's JSON decoder can raise a plain ValueError when an integer exceeds its
+configured conversion limit. The loader now maps decoder ValueError to
+PARSE_FAILED, as it already did syntax and encoding errors. No global integer
+limit is changed in production. Nested parse failures still block through the
+existing parse_error rule; invalid outer documents retain CLI exit 2.

@@ -136,6 +136,14 @@ EDGE_CASES.extend([
                        "source_ref": "s", "target_ref": "t"}, BOUNDARY_CONTRACT),
     ("nested-infinity", {"body": "1e999", "source_ref": "s", "target_ref": "t"},
      BOUNDARY_CONTRACT),
+    ("lone-surrogate", {"body": {"name": "\ud800"}, "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("lone-surrogate-key", {"body": {"\udfff": 1}, "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("nested-surrogate", {"body": '{"name":"\\ud800"}', "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("supplementary-unicode", {"body": {"name": "😀"}, "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
 ])
 
 

@@ -44,6 +44,9 @@ loader under default limits, as nested YAML already does. Bounds for the outer
 document can be customized through the Python API; nested document bounds
 remain the package defaults. NaN/Infinity constants are invalid JSON, and
 non-finite parsed numbers are rejected before evaluation.
+Strings and object keys must encode as UTF-8; unpaired Unicode surrogates are
+`SCHEMA_INVALID`. JSON decoder failures, including integer-conversion limits,
+are `PARSE_FAILED`. ResultSeal leaves the interpreter's numeric limits in place.
 
 ## Body-less success protocols (effect claims)
 

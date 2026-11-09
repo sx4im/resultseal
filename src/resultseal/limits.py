@@ -52,17 +52,22 @@ def _walk(obj: JsonValue, depth: int, budget: _Budget) -> None:
     if isinstance(obj, float) and not isfinite(obj):
         raise SchemaInvalidError("numbers must be finite")
     if isinstance(obj, str):
-        if len(obj) > budget.limits.max_string_chars:
-            raise LimitExceededError(
-                f"strings exceed {budget.limits.max_string_chars} characters"
-            )
+        _check_string(obj, budget.limits)
     elif isinstance(obj, dict):
         for key, value in obj.items():
             if isinstance(key, str):
                 budget.nodes += 1
-                if len(key) > budget.limits.max_string_chars:
-                    raise LimitExceededError("object keys exceed string limit")
+                _check_string(key, budget.limits)
             _walk(value, depth + 1, budget)
     elif isinstance(obj, list):
         for item in obj:
             _walk(item, depth + 1, budget)
+
+
+def _check_string(value: str, limits: Limits) -> None:
+    if len(value) > limits.max_string_chars:
+        raise LimitExceededError(f"strings exceed {limits.max_string_chars} characters")
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise SchemaInvalidError("strings must be valid UTF-8") from exc

@@ -13,6 +13,9 @@
   clock, and contracts loaded from mappings respect input limits (D28).
 - The browser playground follows these checks with parity regression cases.
 - Source archives exclude local agent configurations and instructions.
+- Unpaired Unicode surrogates are rejected in strings and object keys before
+  promotion. UTF-8 encoding and JSON decoder integer-limit failures now return
+  stable ResultSeal errors instead of Python tracebacks.
 
 ### Changed
 

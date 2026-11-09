@@ -32,6 +32,12 @@ def test_unicode_encoded_as_utf8() -> None:
     assert "é".encode() in canonical_json({"u": "é"})
 
 
+@pytest.mark.parametrize("payload", [{"u": "\ud800"}, {"\udfff": "value"}])
+def test_invalid_unicode_has_a_stable_schema_error(payload: dict[str, str]) -> None:
+    with pytest.raises(SchemaInvalidError):
+        canonical_json(payload)
+
+
 def test_no_insignificant_whitespace() -> None:
     assert canonical_json({"a": 1, "b": [1, 2]}) == b'{"a":1,"b":[1,2]}'
 

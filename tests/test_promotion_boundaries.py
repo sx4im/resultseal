@@ -89,9 +89,25 @@ def test_contract_mapping_respects_input_limits(limits: Limits) -> None:
 
 
 @pytest.mark.parametrize(
+    "raw",
+    [
+        observation("json", {"name": "\ud800"}),
+        observation("json", '{"name":"\\ud800"}'),
+        observation("stdio", '{"\\udfff":1}'),
+        {**observation("json", {"id": 1}), "source_ref": "\ud800"},
+    ],
+    ids=["body", "nested-body", "nested-key", "identity"],
+)
+def test_invalid_unicode_cannot_be_promoted(raw: dict[str, object]) -> None:
+    with pytest.raises(SchemaInvalidError):
+        resultseal.seal(raw, CONTRACT, now=NOW)
+
+
+@pytest.mark.parametrize(
     ("raw", "exit_code", "reason"),
     [
         (observation("json", "[" * 40 + "1" + "]" * 40), 3, "LIMIT_EXCEEDED"),
+        (observation("json", {"name": "\ud800"}), 2, "SCHEMA_INVALID"),
         ({**observation("json", {"id": 1}), "observed_at": None}, 2, "SCHEMA_INVALID"),
         (
             {
@@ -105,7 +121,7 @@ def test_contract_mapping_respects_input_limits(limits: Limits) -> None:
             "MISSING_REQUIRED_FIELD",
         ),
     ],
-    ids=["nested-limit", "null-timestamp", "mcp-partial"],
+    ids=["nested-limit", "invalid-unicode", "null-timestamp", "mcp-partial"],
 )
 def test_cli_reports_promotion_boundary_failures(
     raw: dict[str, object],
