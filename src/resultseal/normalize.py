@@ -16,18 +16,17 @@ Envelope identity defaults (D11): caller-provided ids win; otherwise
 
 from __future__ import annotations
 
-import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from typing import cast
 
 from resultseal.canonical import content_hash
-from resultseal.errors import SchemaInvalidError
+from resultseal.errors import ParseFailedError, SchemaInvalidError
 from resultseal.limits import Limits
 from resultseal.models import JsonScalar, JsonValue, ObservationEnvelope, TransportState, TruthState
 from resultseal.rules import ReferenceClock, format_clock
-from resultseal.safeio import load_yaml
+from resultseal.safeio import load_json, load_yaml
 
 _KINDS = frozenset({"http_json", "json", "yaml", "mcp", "stdio", "claim_only"})
 
@@ -251,9 +250,12 @@ def _missing_schema_fields(schema: object, payload: object) -> list[str]:
     if not isinstance(schema, dict):
         return []
     required = schema.get("required")
-    if not isinstance(required, list) or not isinstance(payload, dict):
+    if not isinstance(required, list):
         return []
-    return [name for name in required if isinstance(name, str) and name not in payload]
+    return [
+        name for name in required
+        if isinstance(name, str) and (not isinstance(payload, dict) or name not in payload)
+    ]
 
 
 def _parse_body(body: object) -> tuple[object, bool]:
@@ -262,22 +264,17 @@ def _parse_body(body: object) -> tuple[object, bool]:
         return None, False
     if isinstance(body, str):
         try:
-            return json.loads(body), False
-        except json.JSONDecodeError:
+            # Nested documents use the same safe loader and default bounds as YAML.
+            return load_json(body.encode("utf-8"), Limits()), False
+        except ParseFailedError:
             return None, True
     if isinstance(body, (dict, list, int, float, bool)):
         return body, False
     return None, True
 
 
-def _observed_at(value: object, clock: ReferenceClock) -> str:
-    """The caller's timestamp verbatim; the injected clock only when absent.
-
-    A present-but-unusable value must never fall back to the clock: that
-    would make an old observation look fresh under ``max_age_seconds``.
-    """
-    if value is None:
-        return format_clock(clock.now)
+def _observed_at(value: object) -> str:
+    """Preserve a supplied timestamp; reject unusable values, including null."""
     if isinstance(value, str):
         return value
     if isinstance(value, date):
@@ -322,7 +319,9 @@ def _envelope(
 
     observation_id = raw.get("observation_id")
     tool_call_id = raw.get("tool_call_id")
-    observed_at = raw.get("observed_at")
+    observed_at = (
+        _observed_at(raw["observed_at"]) if "observed_at" in raw else format_clock(clock.now)
+    )
     evidence_raw = raw.get("evidence_refs")
     evidence_refs: tuple[str, ...] = ()
     if evidence_raw is not None:
@@ -358,7 +357,7 @@ def _envelope(
         transport_state=transport_state,
         truth_state=truth_state,
         source_ref=source_ref,
-        observed_at=_observed_at(observed_at, clock),
+        observed_at=observed_at,
         content_hash=digest,
         evidence_refs=evidence_refs,
         reason_codes=(),

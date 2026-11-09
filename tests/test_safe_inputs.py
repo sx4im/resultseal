@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from resultseal.errors import LimitExceededError, ParseFailedError, UnsafeInputError
+from resultseal.errors import (
+    LimitExceededError,
+    ParseFailedError,
+    SchemaInvalidError,
+    UnsafeInputError,
+)
 from resultseal.limits import Limits, walk_bounds
 from resultseal.safeio import load_json, load_yaml, resolve_under_root
 
@@ -75,6 +80,29 @@ def test_benign_documents_load() -> None:
 def test_malformed_json_is_parse_failed() -> None:
     with pytest.raises(ParseFailedError):
         load_json(b"{broken", TIGHT)
+
+
+def test_json_decoder_integer_limit_has_a_stable_error() -> None:
+    import sys
+
+    # Exercise the decoder's documented failure without depending on the host's setting.
+    previous = sys.get_int_max_str_digits()
+    try:
+        sys.set_int_max_str_digits(640)
+        with pytest.raises(ParseFailedError):
+            load_json(b"9" * 641, Limits())
+    finally:
+        sys.set_int_max_str_digits(previous)
+
+
+@pytest.mark.parametrize("data", [b'{"name":"\\ud800"}', b'{"\\udfff":1}'])
+def test_json_lone_surrogates_are_rejected(data: bytes) -> None:
+    with pytest.raises(SchemaInvalidError):
+        load_json(data, Limits())
+
+
+def test_valid_supplementary_unicode_is_preserved() -> None:
+    assert load_json(b'{"name":"\\ud83d\\ude00"}', Limits()) == {"name": "😀"}
 
 
 def test_malformed_yaml_is_parse_failed() -> None:

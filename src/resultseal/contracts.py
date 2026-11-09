@@ -6,7 +6,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from resultseal.errors import ContractInvalidError, ParseFailedError
-from resultseal.limits import Limits
+from resultseal.limits import Limits, walk_bounds
 from resultseal.models import Contract
 from resultseal.safeio import load_json, load_yaml
 
@@ -31,6 +31,7 @@ def load_contract_file(path: Path, limits: Limits) -> Contract:
 def load_contract_data(doc: object, limits: Limits) -> Contract:
     if not isinstance(doc, dict):
         raise ContractInvalidError("contract must be an object")
+    walk_bounds(doc, limits)
     return Contract.from_dict(doc)
 
 

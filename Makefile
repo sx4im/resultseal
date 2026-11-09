@@ -7,13 +7,13 @@ test:
 	python -m pytest -q
 
 lint:
-	ruff check .
+	python -m ruff check .
 
 typecheck:
-	mypy src
+	python -m mypy src
 
 build:
-	python -m build || uv build
+	python -m build
 
 demo:
 	resultseal replay fixtures/*.yaml

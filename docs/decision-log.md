@@ -274,3 +274,72 @@ MATCH and the run continues; a refusal with the wrong code is a MISMATCH
 (exit 1). Exit 3 keeps its CLI_CONTRACT meaning for fixture documents that
 are themselves unsafe. JSON output for a rejection is
 `{"decision","fixture","reason_codes"}`, as there is no decision record.
+
+## D28 — 2026-11-09 — Close promotion and input-limit gaps
+
+Nested JSON strings in JSON, HTTP and stdio observations used `json.loads`
+directly, bypassing the safe loader's depth and node limits. They now use
+`load_json` under default limits, matching the existing nested-YAML policy.
+Syntax failures still become blocked/parse_error; limit violations raise
+`LIMIT_EXCEEDED`. JSON NaN/Infinity constants are parse failures, and non-finite
+numbers (including overflow such as `1e999`) are `SCHEMA_INVALID` at the input
+bounds walk. Mapping-based contract loads now run that same bounds walk.
+
+MCP `outputSchema.required` omissions were recorded in metadata but ignored by
+evaluation. They now block at the completeness step as partial with
+`MISSING_REQUIRED_FIELD`, including when structured content is not an object.
+This is a top-level required-field check, not full JSON Schema validation.
+
+An explicit null `observed_at` no longer falls back to the clock; it is
+`SCHEMA_INVALID`. Only an omitted key gets the clock fallback promised by D25.
+The browser port follows these boundaries and has parity regression cases.
+
+## D29 — 2026-11-09 — Describe the shipped boundary and plan discovery from evidence
+
+README and Pages now lead with Python tool-result validation and explain that
+seals establish contract compliance. MCP checks only top-level required fields;
+the package does not implement all of JSON Schema. README test claims now match
+the framework-free guard tests actually run by CI. Pages gains a description,
+canonical URL, social summary metadata and static introductory text. Its button
+contrast is increased and the decorative colored shadow removed.
+
+Community guidance links current primary sources, names concrete response shapes
+and sets a month-long adoption experiment. The old HN paste-ready intro was
+removed because HN forbids generated and AI-edited posts. The server-only MCP
+listing recommendation was removed because ResultSeal is a library. No social
+posts, directory submissions or claimed ranking improvements are part of this
+change. GitHub metadata can describe the same boundary without a release.
+
+## D30 — 2026-11-09 — Development checks use the selected Python
+
+`make all` found a global `mypy` script whose interpreter could not import mypy,
+while the venv's `python -m mypy` passed. Lint and typecheck now use `python -m`
+so installing the dev extra and selecting a venv selects the tools' interpreter
+as well. Build uses `python -m build` without the alternate `uv build` fallback;
+a failed build must remain a failed gate. This adds no dependency.
+
+## D31 — 2026-11-09 — Exclude local agent files from source distributions
+
+Artifact inspection found local, untracked `.agents`, `.claude`, `.codex`,
+`.mcp.json` and `AGENTS.md` in the sdist: they were not covered by existing
+ignore rules. Add an explicit sdist exclusion for those paths and `.ignore`.
+This keeps local agent configuration out of published source archives without
+changing the maintainer's files or relying on global ignore configuration.
+The wheel remains limited to `src/resultseal`.
+
+## D32 — 2026-11-09 — Refuse unencodable Unicode and classify decoder failures
+
+JSON accepts escaped lone surrogates into Python strings, but ResultSeal's
+canonical format requires UTF-8. Structured payloads containing those strings
+raised an unclassified UnicodeEncodeError; nested JSON strings could seal with
+an unencodable payload because only the original JSON text was hashed. The
+bounds walk now checks string values and string keys for UTF-8 encodability,
+refusing lone surrogates as SCHEMA_INVALID. Valid supplementary Unicode remains
+valid. Canonical serialization also catches errors from its UTF-8 encoding step.
+The browser uses the equivalent Unicode code-point check.
+
+Python's JSON decoder can raise a plain ValueError when an integer exceeds its
+configured conversion limit. The loader now maps decoder ValueError to
+PARSE_FAILED, as it already did syntax and encoding errors. No global integer
+limit is changed in production. Nested parse failures still block through the
+existing parse_error rule; invalid outer documents retain CLI exit 2.

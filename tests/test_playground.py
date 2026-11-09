@@ -117,6 +117,35 @@ EDGE_CASES: list[tuple[str, dict[str, object], dict[str, object]]] = [
     ),
 ]
 
+BOUNDARY_CONTRACT = {
+    "schema_version": "1", "claim_type": "found", "required_fields": [],
+    "freshness": {"mode": "not_required"}, "source_ref": "s", "target_ref": "t",
+}
+EDGE_CASES.extend([
+    ("null-observed-at", {"body": {"id": 1}, "observed_at": None,
+                          "source_ref": "s", "target_ref": "t"}, BOUNDARY_CONTRACT),
+    ("mcp-missing-schema-field", {"kind": "mcp", "structuredContent": {"id": 1},
+                                  "outputSchema": {"required": ["id", "name"]},
+                                  "source_ref": "s", "target_ref": "t"}, BOUNDARY_CONTRACT),
+    ("mcp-schema-needs-object", {"kind": "mcp", "text": "answer",
+                                "outputSchema": {"required": ["id"]},
+                                "source_ref": "s", "target_ref": "t"}, BOUNDARY_CONTRACT),
+    ("nested-depth", {"body": "[" * 40 + "1" + "]" * 40,
+                       "source_ref": "s", "target_ref": "t"}, BOUNDARY_CONTRACT),
+    ("nested-nodes", {"body": "[" + "0," * 4096 + "0]",
+                       "source_ref": "s", "target_ref": "t"}, BOUNDARY_CONTRACT),
+    ("nested-infinity", {"body": "1e999", "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("lone-surrogate", {"body": {"name": "\ud800"}, "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("lone-surrogate-key", {"body": {"\udfff": 1}, "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("nested-surrogate", {"body": '{"name":"\\ud800"}', "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+    ("supplementary-unicode", {"body": {"name": "😀"}, "source_ref": "s", "target_ref": "t"},
+     BOUNDARY_CONTRACT),
+])
+
 
 def test_playground_matches_engine_on_fixtures_and_edge_cases() -> None:
     cases = _fixture_cases() + EDGE_CASES

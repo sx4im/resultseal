@@ -72,6 +72,9 @@ path = "src/resultseal/_version.py"
 [tool.hatch.build.targets.wheel]
 packages = ["src/resultseal"]
 
+[tool.hatch.build.targets.sdist]
+exclude = ["/.agents", "/.claude", "/.codex", "/.mcp.json", "/.ignore", "/AGENTS.md"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]

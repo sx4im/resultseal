@@ -34,11 +34,11 @@ def canonical_json(obj: JsonValue) -> bytes:
             ensure_ascii=False,
             allow_nan=False,
         )
+        return text.encode("utf-8")
     except (TypeError, ValueError) as exc:
         raise SchemaInvalidError(
             "value is not canonically serializable", detail=str(exc)
         ) from exc
-    return text.encode("utf-8")
 
 
 def content_hash(obj: JsonValue) -> str:
