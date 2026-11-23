@@ -4,7 +4,9 @@ One line describing the change.
 
 ## Failure mode addressed
 
-Link the issue, or state the failure mode: what was promoted, blocked, classified, or reported incorrectly?
+Closes #
+
+Or state the failure mode: what was promoted, blocked, classified, or reported incorrectly?
 
 ## Tests
 
@@ -20,7 +22,7 @@ Link the issue, or state the failure mode: what was promoted, blocked, classifie
 Exact results from the documented commands:
 
 ```
-ruff check src tests:
+ruff check .:
 mypy src:
 pytest:
 ```
