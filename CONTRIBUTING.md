@@ -46,6 +46,11 @@ CI always runs it.
    semantic success. Read [ADAPTERS.md](docs/specs/ADAPTERS.md) first.
 4. **Contract recipes.** Production contract patterns for common APIs
    (GitHub, Stripe, AWS, Slack).
+5. **The agent plugin.** The Claude Code and Codex plugin in
+   `plugins/resultseal` needs its hook script tested against more MCP
+   servers, a sharper `resultseal-contracts` skill, and support for more
+   hosts. Read the [plugin README](plugins/resultseal/README.md) and extend
+   `tests/test_agent_plugin.py` with every change.
 
 ## Principles
 

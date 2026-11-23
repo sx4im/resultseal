@@ -82,8 +82,9 @@ An MCP result carries no source version, observation time or evidence
 references, so keep `freshness` at `not_required` and use `found`,
 `read_complete` or `not_found` claims. `source_ref` and `target_ref` label
 the decision and are copied from the contract, so identity checks do not
-apply in hook mode. For those checks, guard the tool in your own code with
-`resultseal.seal`.
+apply in hook mode. The hook uses the tool name for either one a contract
+omits; `resultseal validate` and `resultseal.seal` still require both. For
+identity checks, guard the tool in your own code with `resultseal.seal`.
 
 If the contract is invalid, or the hook cannot import `resultseal`, guarded
 tools are blocked with an explanation rather than passed through.

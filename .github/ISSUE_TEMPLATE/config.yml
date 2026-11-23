@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question
+    url: https://github.com/sx4im/resultseal/discussions
+    about: Ask how to write a contract or use ResultSeal in GitHub Discussions.
+  - name: Try the playground
+    url: https://sx4im.github.io/resultseal/
+    about: Check a tool result against a contract in your browser before filing a bug.

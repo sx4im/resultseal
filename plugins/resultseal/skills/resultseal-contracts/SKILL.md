@@ -47,7 +47,9 @@ or missing required fields. Tools without a contract are not checked.
 - `effect_observed` / `task_complete` with `effect_evidence_required: true`
   always block in the hook, because MCP results carry no evidence references.
 - `source_ref` and `target_ref` are labels for the decision record. The hook
-  copies them into the observation, so they cannot mismatch.
+  copies them into the observation, so they cannot mismatch, and uses the
+  tool name for either one that is missing. Keep both so that
+  `resultseal validate` accepts the contract.
 
 ## When a result is blocked
 

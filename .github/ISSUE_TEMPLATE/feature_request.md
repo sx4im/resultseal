@@ -6,7 +6,7 @@ labels: enhancement
 
 **Problem to solve**
 
-What observation-integrity failure mode or workflow does this address? Check [docs/specs/NON_GOALS.md](../blob/master/docs/specs/NON_GOALS.md) first — agent frameworks, proxies, dashboards, policy engines, retry middleware, signed receipts, and LLM judges are out of scope.
+What observation-integrity failure mode or workflow does this address? Check [docs/specs/NON_GOALS.md](https://github.com/sx4im/resultseal/blob/master/docs/specs/NON_GOALS.md) first — agent frameworks, proxies, dashboards, policy engines, retry middleware, signed receipts, and LLM judges are out of scope.
 
 **Proposed behavior**
 

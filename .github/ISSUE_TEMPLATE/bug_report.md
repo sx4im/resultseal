@@ -6,7 +6,7 @@ labels: bug
 
 **What happened**
 
-State the observed decision (`sealed` / `blocked`), truth state, and reason codes, and what the specifications in [docs/specs/](../blob/master/docs/specs/) require instead.
+State the observed decision (`sealed` / `blocked`), truth state, and reason codes, and what the specifications in [docs/specs/](https://github.com/sx4im/resultseal/tree/master/docs/specs) require instead.
 
 **Minimal reproduction**
 

@@ -116,6 +116,17 @@ def test_not_found_sentinel_seals_absence(project: Path) -> None:
     assert "EMPTY_WITHOUT_NOT_FOUND_SENTINEL" in str(blocked["reason"])
 
 
+@pytest.mark.parametrize("suffix", [".json", ".yaml"])
+def test_contract_without_refs_is_labelled_with_the_tool_name(project: Path, suffix: str) -> None:
+    contract = {k: v for k, v in CONTRACT.items() if k not in ("source_ref", "target_ref")}
+    contracts = project / ".resultseal" / "contracts"
+    (contracts / f"{TOOL}.json").unlink()
+    (contracts / f"{TOOL}{suffix}").write_text(json.dumps(contract), encoding="utf-8")
+    blocked = run_hook(project, [])
+    assert "EMPTY_WITHOUT_NOT_FOUND_SENTINEL" in str(blocked["reason"])
+    assert run_hook(project, text_blocks({"customer_id": "42", "name": "Ada"})) == {}
+
+
 def test_invalid_contract_blocks_instead_of_passing(project: Path) -> None:
     path = project / ".resultseal" / "contracts" / "mcp__crm__broken.json"
     path.write_text('{"schema_version": "1"}', encoding="utf-8")
