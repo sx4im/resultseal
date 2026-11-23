@@ -34,6 +34,8 @@ unverified results are blocked by default.
 - **Framework-neutral.** Plain Python and a CLI. There are examples
   for LangChain, LangGraph, LlamaIndex, CrewAI, Pydantic-AI, smolagents and
   AutoGen.
+- **Inside coding agents.** A [Claude Code and Codex plugin](https://github.com/sx4im/resultseal#claude-code-and-codex-plugin)
+  checks MCP tool results before the agent states them as fact.
 - **Deterministic.** The same input and reference clock always produce the
   same decision and the same SHA-256 fingerprint. No model calls and no
   network.
@@ -333,13 +335,17 @@ that a model's eventual answer is correct.
 - [Adapters](https://github.com/sx4im/resultseal/blob/master/docs/specs/ADAPTERS.md): what each adapter may and may not conclude
 - [Promotion rules](https://github.com/sx4im/resultseal/blob/master/docs/specs/PROMOTION_RULES.md) and [error codes](https://github.com/sx4im/resultseal/blob/master/docs/specs/ERROR_CODES.md)
 - [CLI contract](https://github.com/sx4im/resultseal/blob/master/docs/specs/CLI_CONTRACT.md) and [report format](https://github.com/sx4im/resultseal/blob/master/docs/specs/REPORT_FORMAT.md)
+- [Claude Code and Codex plugin](https://github.com/sx4im/resultseal/blob/master/plugins/resultseal/README.md): hook, skill and contract setup
 - [Decision log](https://github.com/sx4im/resultseal/blob/master/docs/decision-log.md): every semantic decision, with dates and reasons
 - [Changelog](https://github.com/sx4im/resultseal/blob/master/CHANGELOG.md)
 
 ## Contributing
 
-New fixtures from real backends, framework examples and adapter work are all
-welcome. [CONTRIBUTING.md](https://github.com/sx4im/resultseal/blob/master/CONTRIBUTING.md) covers setup and the project's
+New fixtures from real backends, framework examples, adapter work and plugin
+improvements are all welcome. New here? Pick a
+[good first issue](https://github.com/sx4im/resultseal/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22):
+each one names the files to change and the commands that verify the change.
+Comment on it to claim it. [CONTRIBUTING.md](https://github.com/sx4im/resultseal/blob/master/CONTRIBUTING.md) covers setup and the project's
 fail-closed principles.
 
 ```bash
