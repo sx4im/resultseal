@@ -21,6 +21,10 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from resultseal import Contract
 
 CONTRACT_DIR = Path(".resultseal") / "contracts"
 CONTRACT_SUFFIXES = (".json", ".yaml", ".yml")
@@ -40,6 +44,26 @@ def find_contract(event: dict[str, object]) -> Path | None:
         if candidate.is_file():
             return candidate
     return None
+
+
+def load_hook_contract(path: Path, tool_name: str) -> Contract:
+    """Load the contract at *path*; a missing ``source_ref`` or ``target_ref`` is the tool name.
+
+    Both refs only label the decision in hook mode, so a contract written
+    just for the hook may omit them. The file is read with ResultSeal's own
+    bounded loaders, the same ones ``resultseal.load_contract`` uses.
+    """
+    from resultseal.contracts import load_contract_data
+    from resultseal.limits import Limits
+    from resultseal.safeio import load_json, load_yaml
+
+    limits = Limits()
+    loader = load_json if path.suffix == ".json" else load_yaml
+    doc = loader(path.read_bytes(), limits)
+    if isinstance(doc, dict):
+        doc.setdefault("source_ref", tool_name)
+        doc.setdefault("target_ref", tool_name)
+    return load_contract_data(doc, limits)
 
 
 def adapter_input(event: dict[str, object], source_ref: str, target_ref: str) -> dict[str, object]:
@@ -173,11 +197,11 @@ def main(stdin_text: str) -> int:
         return 0
 
     try:
-        contract = resultseal.load_contract(contract_path)
+        contract = load_hook_contract(contract_path, event["tool_name"])
         result = resultseal.check(
             adapter_input(event, contract.source_ref, contract.target_ref), contract
         )
-    except resultseal.ResultSealError as exc:
+    except (resultseal.ResultSealError, OSError) as exc:
         block(
             f"ResultSeal could not evaluate {event['tool_name']} against "
             f"{contract_path}: {exc}. Do not treat this tool result as verified."

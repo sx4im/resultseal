@@ -7,7 +7,8 @@
 - A Claude Code and Codex plugin under `plugins/resultseal`, installable from
   this repository's marketplaces. Its `PostToolUse` hook checks MCP tool
   results against `.resultseal/contracts/<tool_name>.json` and blocks those
-  that do not seal; its skill writes and explains those contracts.
+  that do not seal; its skill writes and explains those contracts. A
+  contract used only by the hook may omit `source_ref` and `target_ref`.
 
 ## [0.2.1] — 2026-11-09
 
