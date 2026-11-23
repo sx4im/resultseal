@@ -1,0 +1,15 @@
+{
+  "name": "resultseal",
+  "description": "ResultSeal plugins for Claude Code",
+  "owner": {
+    "name": "ResultSeal contributors",
+    "url": "https://github.com/sx4im/resultseal"
+  },
+  "plugins": [
+    {
+      "name": "resultseal",
+      "source": "./plugins/resultseal",
+      "description": "Block empty, partial, errored and unverified MCP tool results before Claude states them as fact."
+    }
+  ]
+}

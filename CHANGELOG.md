@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- A Claude Code and Codex plugin under `plugins/resultseal`, installable from
+  this repository's marketplaces. Its `PostToolUse` hook checks MCP tool
+  results against `.resultseal/contracts/<tool_name>.json` and blocks those
+  that do not seal; its skill writes and explains those contracts.
+
 ## [0.2.1] — 2026-11-09
 
 ### Fixed

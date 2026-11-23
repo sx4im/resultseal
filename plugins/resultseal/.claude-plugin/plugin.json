@@ -1,0 +1,23 @@
+{
+  "name": "resultseal",
+  "version": "0.1.0",
+  "description": "Block empty, partial, errored and unverified MCP tool results before the agent states them as fact.",
+  "author": {
+    "name": "ResultSeal contributors",
+    "url": "https://github.com/sx4im/resultseal"
+  },
+  "homepage": "https://github.com/sx4im/resultseal/tree/master/plugins/resultseal",
+  "repository": "https://github.com/sx4im/resultseal",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "tool-calling",
+    "guardrails",
+    "hallucination",
+    "hooks"
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "network": {
+    "hosts": []
+  }
+}

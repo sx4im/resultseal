@@ -1,0 +1,18 @@
+{
+  "description": "Seal MCP tool results against the project's .resultseal/contracts before the model reads them.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/resultseal_hook.py\"",
+            "timeout": 30,
+            "statusMessage": "Sealing MCP tool result"
+          }
+        ]
+      }
+    ]
+  }
+}
