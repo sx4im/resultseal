@@ -1,6 +1,6 @@
 {
   "name": "resultseal",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Block empty, partial, errored and unverified MCP tool results before the agent states them as fact.",
   "author": {
     "name": "ResultSeal contributors",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-11-23
+
 ### Added
 
 - A Claude Code and Codex plugin under `plugins/resultseal`, installable from

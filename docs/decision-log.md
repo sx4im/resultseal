@@ -375,3 +375,16 @@ Export a 1280×640 PNG and point Pages Open Graph/large-card metadata at it, wit
 explicit dimensions and alt text. The existing uploaded GitHub preview is a
 separate repository setting; updating Pages metadata does not replace it.
 The discovery guide records that setup step and GitHub's image requirements.
+
+## D36 — 2026-11-23 — Release 0.3.0 with the agent plugin
+
+The user asked to publish the newest stable release and to have Claude Code
+and Codex install it without a manual step. 0.3.0 is a minor release because
+it ships the Claude Code / Codex plugin; the Python package's promotion rules,
+reason codes, contract schema and CLI exit codes are unchanged. The plugin's
+manifest versions follow the package version so both hosts see one release.
+When `resultseal` is not importable, the hook reruns itself through
+`uv run --with "resultseal>=0.3,<1"`, which fetches the package from PyPI on
+first use. This network access lives in the plugin's hook, not the core
+package. Any failed rerun, including a failed fetch, produces a block
+decision, because both hosts pass a result through when a hook errors.
