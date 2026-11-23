@@ -9,6 +9,20 @@
   results against `.resultseal/contracts/<tool_name>.json` and blocks those
   that do not seal; its skill writes and explains those contracts. A
   contract used only by the hook may omit `source_ref` and `target_ref`.
+- The issue chooser links GitHub Discussions for questions and the
+  playground for trying a contract before filing a bug.
+
+### Changed
+
+- `SECURITY.md` points to GitHub private vulnerability reporting.
+- The roadmap lists the agent plugin as shipped and states that the planned
+  plugin API is for adapters. Contributing guidelines point to the plugin.
+- Package keywords include `claude-code`, `codex` and `mcp-hooks`.
+- Issue templates use absolute links.
+
+### Removed
+
+- Internal launch and discovery planning documents under `docs/community/`.
 
 ## [0.2.1] — 2026-11-09
 
