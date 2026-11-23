@@ -23,6 +23,8 @@
 ### Removed
 
 - Internal launch and discovery planning documents under `docs/community/`.
+- Unused copies of the logo SVG under `docs/` and an offline-only
+  clean-install script that CI never ran.
 
 ## [0.2.1] — 2026-11-09
 
