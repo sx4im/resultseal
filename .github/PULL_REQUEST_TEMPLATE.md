@@ -22,7 +22,7 @@ Or state the failure mode: what was promoted, blocked, classified, or reported i
 Exact results from the documented commands:
 
 ```
-ruff check src tests:
+ruff check .:
 mypy src:
 pytest:
 ```
