@@ -95,8 +95,14 @@ passed through.
 
 ## Updates
 
-Claude Code: `claude plugin marketplace update resultseal`, or turn on
-auto-update for the marketplace in `/plugin`. Codex:
-`codex plugin marketplace upgrade resultseal`. The fetched `resultseal`
+Turn on auto-update for the `resultseal` marketplace in Claude Code's
+`/plugin` menu, or update by hand:
+
+```bash
+claude plugin marketplace update resultseal && claude plugin update resultseal@resultseal
+codex plugin marketplace upgrade resultseal && codex plugin add resultseal@resultseal
+```
+
+Restart the session afterwards. The fetched `resultseal`
 package follows uv's cache; `uv cache clean resultseal` picks up a new
 release immediately.
