@@ -217,6 +217,26 @@ def search_customer(query: str) -> object:
     )
 ```
 
+## Claude Code and Codex plugin
+
+The [ResultSeal plugin](https://github.com/sx4im/resultseal/tree/master/plugins/resultseal)
+checks MCP tool results inside Claude Code and Codex. Its `PostToolUse` hook
+blocks empty, errored and incomplete results for every tool that has a
+contract in `.resultseal/contracts/<tool_name>.json`, and its skill helps the
+agent write those contracts.
+
+```bash
+pipx install resultseal
+
+# Claude Code
+claude plugin marketplace add sx4im/resultseal
+claude plugin install resultseal@resultseal
+
+# Codex (then trust the hook in /hooks)
+codex plugin marketplace add sx4im/resultseal
+codex plugin add resultseal@resultseal
+```
+
 ## How it decides
 
 ### Adapter inputs
