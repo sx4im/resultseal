@@ -127,6 +127,57 @@ def test_contract_without_refs_is_labelled_with_the_tool_name(project: Path, suf
     assert run_hook(project, text_blocks({"customer_id": "42", "name": "Ada"})) == {}
 
 
+def run_hook_without_resultseal(project: Path, bin_dir: Path) -> subprocess.CompletedProcess[str]:
+    event = {"hook_event_name": "PostToolUse", "cwd": str(project), "tool_name": TOOL,
+             "tool_response": []}
+    return subprocess.run(
+        [sys.executable, "-S", str(HOOK)],
+        input=json.dumps(event), capture_output=True, text=True, check=False,
+        env={"PATH": str(bin_dir), "CLAUDE_PROJECT_DIR": str(project)},
+    )
+
+
+def test_missing_package_is_fetched_with_uv(project: Path, tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "uv-calls"
+    uv = bin_dir / "uv"
+    uv.write_text(
+        f'#!/bin/sh\necho "$@" >> {calls}\necho "$RESULTSEAL_HOOK_DELEGATED" >> {calls}\n'
+        'echo \'{"decision": "block", "reason": "from uv"}\'\n',
+        encoding="utf-8",
+    )
+    uv.chmod(0o755)
+    completed = run_hook_without_resultseal(project, bin_dir)
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout)["reason"] == "from uv"
+    args, delegated = calls.read_text(encoding="utf-8").splitlines()
+    assert args.startswith("run --quiet --no-project --with resultseal>=0.3,<1 python ")
+    assert args.endswith(str(HOOK))
+    assert delegated == "1"
+
+
+def test_failed_uv_fetch_blocks_instead_of_passing(project: Path, tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    uv = bin_dir / "uv"
+    uv.write_text("#!/bin/sh\necho 'error: Failed to fetch resultseal' >&2\nexit 2\n",
+                  encoding="utf-8")
+    uv.chmod(0o755)
+    completed = run_hook_without_resultseal(project, bin_dir)
+    assert completed.returncode == 0, completed.stderr
+    output = json.loads(completed.stdout)
+    assert output["decision"] == "block"
+    assert "Failed to fetch resultseal" in output["reason"]
+
+
+def test_missing_package_without_uv_blocks(project: Path, tmp_path: Path) -> None:
+    completed = run_hook_without_resultseal(project, tmp_path)
+    output = json.loads(completed.stdout)
+    assert output["decision"] == "block"
+    assert "not importable" in output["reason"]
+
+
 def test_invalid_contract_blocks_instead_of_passing(project: Path) -> None:
     path = project / ".resultseal" / "contracts" / "mcp__crm__broken.json"
     path.write_text('{"schema_version": "1"}', encoding="utf-8")

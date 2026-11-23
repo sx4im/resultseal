@@ -30,8 +30,9 @@ or missing required fields. Tools without a contract are not checked.
 ```
 
 4. Validate it: `resultseal validate .resultseal/contracts/<tool_name>.json`.
-   The command must print `valid (contract)`. Install the CLI with
-   `pipx install resultseal` if it is missing.
+   The command must print `valid (contract)`. If the CLI is missing, run
+   `uvx resultseal validate ...` instead, or install it with
+   `pipx install resultseal`.
 
 ## Choosing fields
 

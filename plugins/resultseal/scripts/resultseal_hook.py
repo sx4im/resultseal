@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
 CONTRACT_DIR = Path(".resultseal") / "contracts"
 CONTRACT_SUFFIXES = (".json", ".yaml", ".yml")
+UV_REQUIREMENT = "resultseal>=0.3,<1"
 
 
 def find_contract(event: dict[str, object]) -> Path | None:
@@ -155,18 +156,38 @@ def _cli_interpreter() -> str | None:
     return interpreter
 
 
-def _delegate(interpreter: str, stdin_text: str) -> int:
+def _runner() -> list[str] | None:
+    """A command that reruns this hook where ``resultseal`` is importable, or None.
+
+    An installed ``resultseal`` CLI wins. Otherwise ``uv`` fetches the newest
+    compatible release from PyPI into its cache on first use.
+    """
+    interpreter = _cli_interpreter()
+    if interpreter is not None:
+        return [interpreter, __file__]
+    uv = shutil.which("uv")
+    if uv is not None:
+        return [uv, "run", "--quiet", "--no-project", "--with", UV_REQUIREMENT, "python", __file__]
+    return None
+
+
+def _delegate(command: list[str], stdin_text: str, tool_name: str) -> None:
     completed = subprocess.run(
-        [interpreter, __file__],
+        command,
         input=stdin_text,
         capture_output=True,
         text=True,
         env={**os.environ, "RESULTSEAL_HOOK_DELEGATED": "1"},
         check=False,
     )
+    if completed.returncode != 0:
+        detail = completed.stderr.strip().splitlines()[-1:] or ["no error output"]
+        block(
+            f"ResultSeal guards {tool_name} but could not run its check "
+            f"({detail[0][:200]}). Do not treat this tool result as verified."
+        )
+        return
     sys.stdout.write(completed.stdout)
-    sys.stderr.write(completed.stderr)
-    return completed.returncode
 
 
 def main(stdin_text: str) -> int:
@@ -183,16 +204,15 @@ def main(stdin_text: str) -> int:
     try:
         import resultseal
     except ImportError:
-        interpreter = None
-        if not os.environ.get("RESULTSEAL_HOOK_DELEGATED"):
-            interpreter = _cli_interpreter()
-        if interpreter is not None:
-            return _delegate(interpreter, stdin_text)
+        command = None if os.environ.get("RESULTSEAL_HOOK_DELEGATED") else _runner()
+        if command is not None:
+            _delegate(command, stdin_text, event["tool_name"])
+            return 0
         block(
             f"ResultSeal guards {event['tool_name']} ({contract_path}) but the "
-            "resultseal package is not importable by this hook. Install it with "
-            "`pipx install resultseal` or `pip install resultseal`. Do not treat "
-            "this tool result as verified."
+            "resultseal package is not importable by this hook. Install uv "
+            "(https://docs.astral.sh/uv/) or run `pipx install resultseal`. Do not "
+            "treat this tool result as verified."
         )
         return 0
 

@@ -14,7 +14,10 @@ It bundles:
 
 ## Install
 
-The hook needs Python 3.11+ and the `resultseal` package:
+The hook needs Python 3.11+ and either [uv](https://docs.astral.sh/uv/) or
+an installed `resultseal` package. With uv on `PATH`, the hook fetches the
+newest compatible `resultseal` release from PyPI on its first run and reuses
+uv's cache afterwards. To pin a version instead, install it yourself:
 
 ```bash
 pipx install resultseal        # or: uv tool install resultseal / pip install resultseal
@@ -86,5 +89,14 @@ apply in hook mode. The hook uses the tool name for either one a contract
 omits; `resultseal validate` and `resultseal.seal` still require both. For
 identity checks, guard the tool in your own code with `resultseal.seal`.
 
-If the contract is invalid, or the hook cannot import `resultseal`, guarded
-tools are blocked with an explanation rather than passed through.
+If the contract is invalid, or the hook can neither import nor fetch
+`resultseal`, guarded tools are blocked with an explanation rather than
+passed through.
+
+## Updates
+
+Claude Code: `claude plugin marketplace update resultseal`, or turn on
+auto-update for the marketplace in `/plugin`. Codex:
+`codex plugin marketplace upgrade resultseal`. The fetched `resultseal`
+package follows uv's cache; `uv cache clean resultseal` picks up a new
+release immediately.

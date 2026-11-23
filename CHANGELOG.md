@@ -9,6 +9,9 @@
   results against `.resultseal/contracts/<tool_name>.json` and blocks those
   that do not seal; its skill writes and explains those contracts. A
   contract used only by the hook may omit `source_ref` and `target_ref`.
+  With [uv](https://docs.astral.sh/uv/) on `PATH`, the hook fetches the
+  newest compatible `resultseal` from PyPI itself, so installing the plugin
+  is enough. A hook that cannot run its check blocks the result.
 - The issue chooser links GitHub Discussions for questions and the
   playground for trying a contract before filing a bug.
 
