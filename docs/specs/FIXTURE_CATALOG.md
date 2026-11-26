@@ -37,3 +37,4 @@ expectation) and replays with `resultseal replay fixtures/<name>.yaml`.
 | `dynamodb-empty-query.yaml` | DynamoDB `Query` with `Items: []`, `Count: 0` | `partial` | Block (`MISSING_REQUIRED_FIELD`): HTTP 200 metadata is not a record. |
 | `graphql-error-200.yaml` | GraphQL HTTP 200 with `data: null` and `errors` | `partial` | Block (`MISSING_REQUIRED_FIELD`): partial-error envelopes never seal. |
 | `http-404-structured-error.yaml` | HTTP 404 with a JSON error body | `unknown` | Block (`TRANSPORT_FAILED`): an error body is transport evidence, not domain `not_found`. |
+| `slack-ok-false-200.yaml` | Slack Web API HTTP 200 with `ok: false` and `error` | `partial` | Block (`MISSING_REQUIRED_FIELD`): HTTP 200 error envelopes without the required payload never seal. |

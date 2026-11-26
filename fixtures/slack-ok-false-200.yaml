@@ -1,0 +1,29 @@
+fixture_version: 1
+name: slack-ok-false-200
+claim_type: found
+contract:
+  schema_version: "1"
+  claim_type: found
+  required_fields:
+    - channel
+  freshness:
+    mode: not_required
+  min_source_version: null
+  source_ref: slack://conversations.info
+  target_ref: channel:C0123
+  not_found_sentinel: null
+  effect_evidence_required: false
+input:
+  kind: http_json
+  status_code: 200
+  source_ref: slack://conversations.info
+  target_ref: channel:C0123
+  tool_name: slack_conversations_info
+  body:
+    ok: false
+    error: channel_not_found
+expected:
+  truth_state: partial
+  decision: blocked
+  reason_codes:
+    - MISSING_REQUIRED_FIELD
